@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.github'
+    'allauth.socialaccount.providers.github',
+     'allauth.socialaccount.providers.linkedin_oauth2',
 ]
 
 MIDDLEWARE = [
@@ -101,7 +102,16 @@ SOCIALACCOUNT_PROVIDERS = {
             },
     'github': {
         'SCOPE': ['read:user', 'user:email'],
-            }
+            },
+    'linkedin': {
+        'SCOPE': [
+            'r_liteprofile',  # For basic profile details
+            'r_emailaddress', # For the user's email address
+        ],
+        'FIELDS': [
+            'id', 'firstName', 'lastName', 'profilePicture(displayImage~:playableStreams)','emailAddress'
+        ],'REDIRECT_URI': 'http://127.0.0.1:8000/accounts/linkedin_oauth2/login/callback/',
+                }
 }
 
 # Password validation

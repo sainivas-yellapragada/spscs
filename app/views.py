@@ -26,15 +26,20 @@ def populate_profile_on_signup(sociallogin, **kwargs):
     user = sociallogin.user
     profile, created = Profile.objects.get_or_create(user=user)
 
-    # Log the data received from GitHub
-    print("GitHub Data:", sociallogin.account.extra_data)
+    # Log the data received from social accounts
+    print(f"{sociallogin.account.provider.capitalize()} Data:", sociallogin.account.extra_data)
 
     if sociallogin.account.provider == 'google':
         profile.google_email = sociallogin.account.extra_data.get('email')
         profile.google_name = sociallogin.account.extra_data.get('name')
     elif sociallogin.account.provider == 'github':
-        profile.github_email = sociallogin.account.extra_data.get('email')  # May return None if private
-        profile.github_name = sociallogin.account.extra_data.get('login')  # GitHub username
+        profile.github_email = sociallogin.account.extra_data.get('email')
+        profile.github_name = sociallogin.account.extra_data.get('login')
+    elif sociallogin.account.provider == 'linkedin':
+        profile.linkedin_email = sociallogin.account.extra_data.get('emailAddress')
+        profile.linkedin_name = f"{sociallogin.account.extra_data.get('localizedFirstName')} {sociallogin.account.extra_data.get('localizedLastName')}"
+        profile.linkedin_profile_pic = sociallogin.account.extra_data.get('profilePicture(displayImage~:playableStreams)')
+    
     profile.save()
 
 # Signal to ensure a Profile is created or updated after login
@@ -52,4 +57,8 @@ def ensure_profile_on_login(request, **kwargs):
         elif social_account.provider == 'github':  # GitHub
             profile.github_email = social_account.extra_data.get('email')
             profile.github_name = social_account.extra_data.get('login')
+        elif social_account.provider == 'linkedin':  # LinkedIn
+            profile.linkedin_email = social_account.extra_data.get('emailAddress')
+            profile.linkedin_name = f"{social_account.extra_data.get('localizedFirstName')} {social_account.extra_data.get('localizedLastName')}"
+            profile.linkedin_profile_pic = social_account.extra_data.get('profilePicture(displayImage~:playableStreams)')
         profile.save()
