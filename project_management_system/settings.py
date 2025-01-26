@@ -96,14 +96,12 @@ DATABASES = {
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        },
-    }
+            'SCOPE': ['profile','email',],
+            'AUTH_PARAMS': {'access_type': 'online',},
+            },
+    'github': {
+        'SCOPE': ['read:user', 'user:email'],
+            }
 }
 
 # Password validation
@@ -165,3 +163,9 @@ AUTHENTICATION_BACKENDS = [
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+ACCOUNT_USERNAME_REQUIRED = True  # Ensure usernames are used
+ACCOUNT_UNIQUE_EMAIL = True  # Ensure email uniqueness across accounts
+SOCIALACCOUNT_AUTO_SIGNUP = False  # Disable automatic signup for social accounts
+ACCOUNT_SIGNUP_REDIRECT_URL = '/'  # Redirect after signup
+SOCIALACCOUNT_ADAPTER = 'app.adapters.MySocialAccountAdapter'
