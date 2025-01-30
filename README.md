@@ -40,7 +40,7 @@ Frontend: HTML, CSS, JavaScript (Optional: React or Vue for enhanced UI)
 Database: MongoDB (using Django with MongoEngine)
 Authentication: Django Allauth (Google & LinkedIn OAuth, traditional login)
 5. Installation & Setup:
-git clone https://github.com/yourusername/pms.git
+git clone (https://github.com/sainivas-yellapragada/pms.git)
 cd pms
 
 # Create a virtual environment
