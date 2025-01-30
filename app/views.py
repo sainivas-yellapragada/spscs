@@ -3,22 +3,25 @@ from django.contrib.auth import logout
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
 from .models import Profile
+from django.contrib.auth.decorators import login_required
+
+# Index view - Displays the custom login page
+def index(request):
+    return render(request, 'app/index.html')  # Custom login page
 
 # Home view - Displays the homepage with user and profile details
+@login_required  # Ensure only authenticated users can access the homepage
 def home(request):
-    profile = None
-    if request.user.is_authenticated:
-        # Retrieve the logged-in user's profile
-        profile = Profile.objects.filter(user=request.user).first()
-    return render(request, 'app/index.html', {
+    profile = Profile.objects.filter(user=request.user).first()  # Get the user's profile
+    return render(request, 'app/home.html', {  # Updated to use 'app/home.html' for homepage
         'user': request.user,
         'profile': profile,
     })
 
-# Logout view - Logs out the user and redirects to the homepage
+# Logout view - Logs out the user and redirects to the login page
 def logout_view(request):
     logout(request)
-    return redirect('/')
+    return redirect('index')  # Redirect to login page after logout
 
 # Signal to populate the Profile with social login details after signup
 @receiver(user_signed_up)

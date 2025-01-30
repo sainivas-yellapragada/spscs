@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda Dashboard</title>
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="menu">
+      <a href="#">Home</a>
+      <a href="#">Profile</a>
+      <a href="#">Projects</a>
+      <a href="#">Settings</a>
+    </div>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+
+  <div id="main">
+    <!-- Toggle Button -->
+    <span class="menu-btn" id="menuToggle">&#9776;</span>
+
+    <!-- Main Content -->
+    <div class="container">
+      <header>
+        <h1 style="font-family:times new roman">
+            Welcome, <span id="name">{{ user.first_name|default:user.username }}</span>
+          </h1>
+        <p>Here is your agenda for today</p>
+      </header>
+      <main>
+        <!-- Left Section -->
+        <div class="left">
+          <div class="calendar">
+            <h2>Calendar</h2>
+            <div id="currentMonth" class="month"></div>
+            <table>
+              <thead>
+                <tr>
+                  <th>SUN</th>
+                  <th>MON</th>
+                  <th>TUE</th>
+                  <th>WED</th>
+                  <th>THU</th>
+                  <th>FRI</th>
+                  <th>SAT</th>
+                </tr>
+              </thead>
+              <tbody id="calendarBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="top-right">
+          <div class="tasks">
+            <h2>Tasks</h2>
+            <div class="task-columns">
+              <div class="task-column">
+                <h3>Urgent</h3>
+              </div>
+              <div class="task-column">
+                <h3>Minor</h3>
+              </div>
+              <div class="task-column">
+                <h3>Pending</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom">
+          <div class="team">
+            <h2>Team Details</h2>
+          </div>
+          <div class="project-updates">
+            <h2>Project Updates</h2>
+          </div>
+          <div class="total-projects">
+            <h2>Total Projects</h2>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/home.js' %}"></script>
+</body>
+</html>

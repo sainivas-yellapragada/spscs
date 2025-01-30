@@ -171,11 +171,13 @@ AUTHENTICATION_BACKENDS = [
     
 ]
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/home'  # Redirect to home page after login
+LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redirect to login page after logout
+
 
 ACCOUNT_USERNAME_REQUIRED = True  # Ensure usernames are used
 ACCOUNT_UNIQUE_EMAIL = True  # Ensure email uniqueness across accounts
 SOCIALACCOUNT_AUTO_SIGNUP = False  # Disable automatic signup for social accounts
 ACCOUNT_SIGNUP_REDIRECT_URL = '/'  # Redirect after signup
 SOCIALACCOUNT_ADAPTER = 'app.adapters.MySocialAccountAdapter'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'

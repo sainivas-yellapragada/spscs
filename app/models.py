@@ -10,9 +10,10 @@ class Profile(models.Model):
     google_name = models.CharField(max_length=150, blank=True, null=True)  # Google name (optional)
     github_email = models.EmailField(blank=True, null=True)  # GitHub email (optional)
     github_name = models.CharField(max_length=150, blank=True, null=True)  # GitHub username (optional)
-    linkedin_email = models.EmailField(blank=True, null=True)
-    linkedin_name = models.CharField(max_length=150, blank=True, null=True)
-    linkedin_profile_pic = models.URLField(blank=True, null=True)
+    linkedin_email = models.EmailField(blank=True, null=True)  # LinkedIn email (optional)
+    linkedin_name = models.CharField(max_length=150, blank=True, null=True)  # LinkedIn name (optional)
+    linkedin_profile_pic = models.URLField(blank=True, null=True)  # LinkedIn profile picture URL (optional)
+    
     def __str__(self):
         return f"{self.user.username}'s Profile"
 

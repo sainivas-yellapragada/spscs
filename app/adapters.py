@@ -1,47 +1,58 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialAccount
-from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from .models import Profile
+from django.conf import settings
+from django.shortcuts import redirect
+from django.urls import reverse
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
+    """
+    Custom adapter to handle additional profile data and redirect after social login
+    """
+    
+    def is_open_for_signup(self, request, socialaccount):
+        """
+        Custom logic to handle if the social account can be linked with the current user
+        """
+        return True  # Modify as needed for your logic
+    
     def pre_social_login(self, request, sociallogin):
-        # If the user is already logged in, don't link anything
-        if request.user.is_authenticated:
-            return
-
-        # Fetch the email from the social account
-        email = sociallogin.account.extra_data.get('email')
-
-        # Check if a user with this email exists
-        if email:
-            try:
-                existing_user = User.objects.get(email=email)
-                sociallogin.connect(request, existing_user)  # Link the social account
-            except User.DoesNotExist:
-                pass  # No user exists, proceed with normal signup
-
-    def save_user(self, request, sociallogin, form=None):
-        # Save the user instance
-        user = super().save_user(request, sociallogin, form)
+        """
+        Handle user data before the social login process
+        """
+        super().pre_social_login(request, sociallogin)
         
-        # Create or get the profile for the user
-        profile, created = Profile.objects.get_or_create(user=user)
-        
-        # Handle social login data based on provider
+        # Handle custom user profile information from social login
         if sociallogin.account.provider == 'google':
-            profile.google_email = sociallogin.account.extra_data.get('email')
-            profile.google_name = sociallogin.account.extra_data.get('name')
-        elif sociallogin.account.provider == 'github':
-            profile.github_email = sociallogin.account.extra_data.get('email')
-            profile.github_name = sociallogin.account.extra_data.get('login')
-        elif sociallogin.account.provider == 'linkedin':
-            # LinkedIn specific data handling
-            profile.linkedin_email = sociallogin.account.extra_data.get('emailAddress')
-            profile.linkedin_name = f"{sociallogin.account.extra_data.get('localizedFirstName')} {sociallogin.account.extra_data.get('localizedLastName')}"
-            profile.linkedin_profile_pic = sociallogin.account.extra_data.get('profilePicture(displayImage~:playableStreams)')
+            # Example: Populate user profile from Google data
+            email = sociallogin.account.extra_data.get('email')
+            name = sociallogin.account.extra_data.get('name')
+            profile = sociallogin.user.profile
+            profile.google_email = email
+            profile.google_name = name
+            profile.save()
 
-        # Save the profile data
-        profile.save()
-        
-        return user
+        elif sociallogin.account.provider == 'github':
+            # Example: Populate user profile from GitHub data
+            email = sociallogin.account.extra_data.get('email')
+            login = sociallogin.account.extra_data.get('login')
+            profile = sociallogin.user.profile
+            profile.github_email = email
+            profile.github_name = login
+            profile.save()
+
+        elif sociallogin.account.provider == 'linkedin':
+            # Example: Populate user profile from LinkedIn data
+            email = sociallogin.account.extra_data.get('emailAddress')
+            first_name = sociallogin.account.extra_data.get('localizedFirstName')
+            last_name = sociallogin.account.extra_data.get('localizedLastName')
+            profile = sociallogin.user.profile
+            profile.linkedin_email = email
+            profile.linkedin_name = f"{first_name} {last_name}"
+            profile.save()
+    
+    def get_login_redirect_url(self, request):
+        """
+        Define the URL to redirect after successful social login
+        """
+        # After login, redirect to the homepage or another desired URL
+        return reverse('home')
