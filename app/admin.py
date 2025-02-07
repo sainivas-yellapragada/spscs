@@ -3,6 +3,10 @@ from .models import Profile
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'google_email', 'google_name',
-                    'github_email', 'github_name', 
-                    'linkedin_email', 'linkedin_name', 'linkedin_profile_pic')
+    list_display = ('user', 'email', 'google_name', 'github_name', 'linkedin_name')
+
+    def email(self, obj):
+        return obj.user.email  # Show email for manual users in admin panel
+
+    email.admin_order_field = 'user__email'
+    email.short_description = 'Email'

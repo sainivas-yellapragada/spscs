@@ -12,14 +12,22 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
+
+    <!-- Hidden div to pass Django messages -->
+    <div id="django-messages" style="display: none;">
+        {% for message in messages %}
+            <p class="message">{{ message }}</p>
+        {% endfor %}
+    </div>
+
     <div class="container">
         <!-- Login Form -->
         <div class="form-box login">
-            <form method="POST" action="{% url 'account_login' %}">
+            <form method="POST" action="{% url 'manual_login' %}">  
                 {% csrf_token %}
                 <h1>Login</h1>
                 <div class="input-box">
-                    <input type="text" name="login" placeholder="Username or Email" required>
+                    <input type="text" name="username" placeholder="Username" required>
                     <i class='bx bxs-user'></i>
                 </div>
                 <div class="input-box">
@@ -33,7 +41,6 @@
                 <p>or login with social platforms</p>
                 <div class="social-icons">
                     <a href="{% provider_login_url 'google' %}"><i class='bx bxl-google'></i></a>
-                    <!--<a href=""><i class='bx bxl-facebook'></i></a>-->
                     <a href="{% provider_login_url 'github' %}"><i class='bx bxl-github'></i></a>
                     <a href="{% provider_login_url 'linkedin_oauth2' %}"><i class='bx bxl-linkedin'></i></a>
                 </div>
@@ -42,7 +49,7 @@
 
         <!-- Registration Form -->
         <div class="form-box register">
-            <form method="POST" action="{% url 'account_signup' %}">
+            <form method="POST" action="{% url 'register' %}">  
                 {% csrf_token %}
                 <h1>Registration</h1>
                 <div class="input-box">
@@ -65,7 +72,6 @@
                 <p>or register with social platforms</p>
                 <div class="social-icons">
                     <a href="{% provider_login_url 'google' %}"><i class='bx bxl-google'></i></a>
-                    <!--<a href=""><i class='bx bxl-facebook'></i></a>-->
                     <a href="{% provider_login_url 'github' %}"><i class='bx bxl-github'></i></a>
                     <a href="{% provider_login_url 'linkedin_oauth2' %}"><i class='bx bxl-linkedin'></i></a>
                 </div>
@@ -89,5 +95,6 @@
     </div>
     
     <script src="{% static 'js/main.js' %}"></script>
+    
 </body>
 </html>

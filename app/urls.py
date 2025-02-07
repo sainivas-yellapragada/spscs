@@ -3,7 +3,9 @@ from . import views
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
-    path('', views.login, name='index'),  # Index page as login page
+    path('', views.login_view, name='login_view'),  # Correct login page path
     path('logout/', views.logout_view, name='logout'),  # Logout functionality
     path('home/', login_required(views.home), name='home'),  # Protect home page
+    path('register/', views.manual_register, name='register'),  # Manual Registration
+    path('login/', views.login_view, name='manual_login'),  # Ensure this points to the login view
 ]

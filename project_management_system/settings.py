@@ -181,3 +181,4 @@ SOCIALACCOUNT_AUTO_SIGNUP = False  # Disable automatic signup for social account
 ACCOUNT_SIGNUP_REDIRECT_URL = '/'  # Redirect after signup
 SOCIALACCOUNT_ADAPTER = 'app.adapters.MySocialAccountAdapter'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
