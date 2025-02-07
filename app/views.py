@@ -6,8 +6,8 @@ from .models import Profile
 from django.contrib.auth.decorators import login_required
 
 # Index view - Displays the custom login page
-def index(request):
-    return render(request, 'app/index.html')  # Custom login page
+def login(request):
+    return render(request, 'app/login.html')  # Custom login page
 
 # Home view - Displays the homepage with user and profile details
 @login_required  # Ensure only authenticated users can access the homepage
