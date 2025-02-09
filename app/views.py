@@ -92,14 +92,18 @@ def populate_profile_on_signup(request, sociallogin=None, **kwargs):
         if sociallogin.account.provider == 'google':
             profile.google_email = sociallogin.account.extra_data.get('email')
             profile.google_name = sociallogin.account.extra_data.get('name')
+
         elif sociallogin.account.provider == 'github':
             profile.github_email = sociallogin.account.extra_data.get('email')
             profile.github_name = sociallogin.account.extra_data.get('login')
-        elif sociallogin.account.provider == 'linkedin':
-            profile.linkedin_email = sociallogin.account.extra_data.get('emailAddress')
-            profile.linkedin_name = f"{sociallogin.account.extra_data.get('localizedFirstName')} {sociallogin.account.extra_data.get('localizedLastName')}"
-            profile.linkedin_profile_pic = sociallogin.account.extra_data.get('profilePicture(displayImage~:playableStreams)')
-    
+
+        elif sociallogin.account.provider == 'facebook':
+            profile.facebook_email = sociallogin.account.extra_data.get('email')
+            profile.facebook_name = sociallogin.account.extra_data.get('name')
+            
+            # Extract Facebook profile picture (optional)
+            profile.facebook_profile_pic = sociallogin.account.extra_data.get('picture', {}).get('data', {}).get('url')
+
     profile.save()
 
 # Signal: Ensure Profile exists after Login
@@ -110,14 +114,21 @@ def ensure_profile_on_login(request, **kwargs):
 
     if user.socialaccount_set.exists():
         social_account = user.socialaccount_set.first()
+        
         if social_account.provider == 'google':
             profile.google_email = social_account.extra_data.get('email')
             profile.google_name = social_account.extra_data.get('name')
+
         elif social_account.provider == 'github':
             profile.github_email = social_account.extra_data.get('email')
             profile.github_name = social_account.extra_data.get('login')
-        elif social_account.provider == 'linkedin':
-            profile.linkedin_email = social_account.extra_data.get('emailAddress')
-            profile.linkedin_name = f"{social_account.extra_data.get('localizedFirstName')} {social_account.extra_data.get('localizedLastName')}"
-            profile.linkedin_profile_pic = social_account.extra_data.get('profilePicture(displayImage~:playableStreams)')
+
+        elif social_account.provider == 'facebook':
+            profile.facebook_email = social_account.extra_data.get('email')
+            profile.facebook_name = social_account.extra_data.get('name')
+
+            # Extract Facebook profile picture (optional)
+            profile.facebook_profile_pic = social_account.extra_data.get('picture', {}).get('data', {}).get('url')
+
         profile.save()
+
