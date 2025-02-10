@@ -131,4 +131,6 @@ def ensure_profile_on_login(request, **kwargs):
             profile.facebook_profile_pic = social_account.extra_data.get('picture', {}).get('data', {}).get('url')
 
         profile.save()
-
+@login_required
+def profile_page(request):
+    return render(request, 'app/profile.html')

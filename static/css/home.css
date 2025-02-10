@@ -197,3 +197,20 @@ td.today {
   border-radius: 8px;
   background-color: #f9f9f9;
 }
+.profile {
+  position: absolute;
+  bottom: 175px; /* Adjust to position above logout */
+  left: 45%;
+  transform: translateX(-50%); /* Center horizontally */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile img {
+  width: 70px !important; 
+  height: 70px !important;
+  border-radius: 50%;  
+  object-fit: cover;
+  display: block;
+}

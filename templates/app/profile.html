@@ -1,35 +1,51 @@
+{% load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile & Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Profile</title>
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="menu">
-            <a href="home.html">Home</a>
-            <a href="#">Tasks</a>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="">Tasks</a>
             <a href="#">Projects</a>
             <a href="#">Report</a>
             <a href="#">Notifications</a>
-            <div class="profile" id="profile"></div>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <div class="profile" id="profile">
+                <a href="#"><img src="{% static 'images/profile.png' %}" alt="profile" ></a>
+            </div>
+              
         </div>
+            <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
     </div>
 
-    <!-- Toggle Button -->
-    <span class="menu-btn" id="menuToggle">&#9776;</span>
+    
 
     <!-- Main Content -->
     <div id="main">
+        <!-- Toggle Button -->
+            <span class="menu-btn" id="menuToggle">&#9776;</span>
         <div class="profile-page">
             <div class="profile-header">
                 <div class="profile-avatar">
                     <label for="profilePicture"></label>
-                    <img src="profile.png" width="100" height="100" id="avatarImage">
+                    <img src="{% static 'images/profile.png' %}" width="100" height="100" id="avatarImage">
                 </div>
                 <h1 class="profile-title">Profile</h1>
             </div>
@@ -94,6 +110,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="{% static 'js/profile.js' %}"></script>
 </body>
 </html>

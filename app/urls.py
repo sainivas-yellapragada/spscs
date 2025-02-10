@@ -8,4 +8,5 @@ urlpatterns = [
     path('home/', login_required(views.home), name='home'),  # Protect home page
     path('register/', views.manual_register, name='register'),  # Manual Registration
     path('login/', views.login_view, name='manual_login'),  # Ensure this points to the login view
+    path('profile/',views.profile_page, name='profile_page'),  # Profile page 
 ]
