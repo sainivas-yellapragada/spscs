@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile & Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu">
+            <a href="home.html">Home</a>
+            <a href="#">Tasks</a>
+            <a href="#">Projects</a>
+            <a href="#">Report</a>
+            <a href="#">Notifications</a>
+            <div class="profile" id="profile"></div>
+        </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <span class="menu-btn" id="menuToggle">&#9776;</span>
+
+    <!-- Main Content -->
+    <div id="main">
+        <div class="profile-page">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <label for="profilePicture"></label>
+                    <img src="profile.png" width="100" height="100" id="avatarImage">
+                </div>
+                <h1 class="profile-title">Profile</h1>
+            </div>
+            <div class="profile-container">
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" value="John">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" value="Doe">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="gender" value="Male" checked> Male</label>
+                                <label><input type="radio" name="gender" value="Female"> Female</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <select id="country">
+                                <option value="US" data-code="+1">United States</option>
+                                <option value="IN" data-code="+91" selected>India</option>
+                                <option value="UK" data-code="+44">United Kingdom</option>
+                                <option value="CA" data-code="+1">Canada</option>
+                                <option value="AU" data-code="+61">Australia</option>
+                                <option value="CN" data-code="+86">China</option>
+                                <option value="USSR" data-code="+7">Russia</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="language">Language</label>
+                            <input type="text" id="language" value="English">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <div class="phone-container">
+                                <select id="phoneCode">
+                                    <option value="+1">+1 </option>
+                                    <option value="+91" selected>+91</option>
+                                    <option value="+44">+44</option>
+                                    <option value="+61">+61</option>
+                                    <option value="+86">+86</option>
+                                    <option value="+7">+7</option>
+                                </select>
+                                <input type="text" id="phone" placeholder="Enter phone number" maxlength="10">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button type="submit" id="saveBtn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
