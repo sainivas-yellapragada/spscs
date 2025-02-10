@@ -18,10 +18,12 @@
       <a href="#">Report</a>
       <a href="#">Notifications</a>
     </div>
-    <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="logout-btn">Logout</button>
-    </form>
+
+    <!-- Added logout button at the bottom -->
+    <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+      {% csrf_token %}
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>    
   </div>
 
   <div id="main">
