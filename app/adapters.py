@@ -1,6 +1,7 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from django.urls import reverse
+from .models import Profile
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     """
@@ -16,32 +17,26 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
         """
         super().pre_social_login(request, sociallogin)
 
+        profile, created = Profile.objects.get_or_create(user=sociallogin.user)
+
         if sociallogin.account.provider == 'google':
-            email = sociallogin.account.extra_data.get('email')
-            name = sociallogin.account.extra_data.get('name')
-            profile = sociallogin.user.profile
-            profile.google_email = email
-            profile.google_name = name
-            profile.save()
+            extra_data = sociallogin.account.extra_data
+            profile.google_email = extra_data.get('email')
+            profile.google_name = extra_data.get('name')
+            profile.profile_picture = extra_data.get('picture', '')
 
         elif sociallogin.account.provider == 'github':
-            email = sociallogin.account.extra_data.get('email')
-            login = sociallogin.account.extra_data.get('login')
-            profile = sociallogin.user.profile
-            profile.github_email = email
-            profile.github_name = login
-            profile.save()
+            extra_data = sociallogin.account.extra_data
+            profile.github_email = extra_data.get('email')
+            profile.github_name = extra_data.get('login')
 
         elif sociallogin.account.provider == 'facebook':  
-            email = sociallogin.account.extra_data.get('email')
-            name = sociallogin.account.extra_data.get('name')
-            picture = sociallogin.account.extra_data.get('picture', {}).get('data', {}).get('url')
+            extra_data = sociallogin.account.extra_data
+            profile.facebook_email = extra_data.get('email')
+            profile.facebook_name = extra_data.get('name')
+            profile.profile_picture = extra_data.get('picture', {}).get('data', {}).get('url')
 
-            profile = sociallogin.user.profile
-            profile.facebook_email = email
-            profile.facebook_name = name
-            profile.facebook_profile_picture = picture
-            profile.save()
+        profile.save()
 
     def get_login_redirect_url(self, request):
         return reverse('home')  

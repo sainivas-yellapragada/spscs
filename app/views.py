@@ -13,28 +13,13 @@ def login_view(request):
         username = request.POST['username']
         password = request.POST['password']
 
-        # Debugging: Print out the entered username and password
-        print(f"Attempting login with username: {username}, password: {password}")
-
-        # Check if user exists
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            print(f"User '{username}' does not exist")
-            messages.error(request, "Invalid credentials. Please try again.")
-            return redirect('login_view')
-
-        # Attempt to authenticate the user
         user = authenticate(request, username=username, password=password)
 
-        # Check if authentication is successful
         if user is not None:
-            print(f"User '{username}' authenticated successfully!")
             auth_login(request, user)
             messages.success(request, "Logged in successfully!")
-            return redirect('home')  # Redirect to home page after successful login
+            return redirect('home')  
         else:
-            print(f"Authentication failed for username: {username}")
             messages.error(request, "Invalid credentials. Please try again.")
             return redirect('login_view')
 
@@ -73,6 +58,7 @@ def manual_register(request):
 
         # Create user
         user = User.objects.create_user(username=username, email=email, password=password1)
+        Profile.objects.create(user=user)  # Create an empty profile for the user
 
         messages.success(request, f"User {username} registered successfully. Please log in.")
         return redirect('login_view')
@@ -85,24 +71,22 @@ def populate_profile_on_signup(request, sociallogin=None, **kwargs):
     user = kwargs['user']
     profile, created = Profile.objects.get_or_create(user=user)
 
-    # If it's a social login, populate profile data
     if sociallogin:
-        print(f"{sociallogin.account.provider.capitalize()} Data:", sociallogin.account.extra_data)
+        extra_data = sociallogin.account.extra_data
+        profile.profile_picture = extra_data.get('picture', '')
 
         if sociallogin.account.provider == 'google':
-            profile.google_email = sociallogin.account.extra_data.get('email')
-            profile.google_name = sociallogin.account.extra_data.get('name')
+            profile.google_email = extra_data.get('email')
+            profile.google_name = extra_data.get('name')
 
         elif sociallogin.account.provider == 'github':
-            profile.github_email = sociallogin.account.extra_data.get('email')
-            profile.github_name = sociallogin.account.extra_data.get('login')
+            profile.github_email = extra_data.get('email')
+            profile.github_name = extra_data.get('login')
 
         elif sociallogin.account.provider == 'facebook':
-            profile.facebook_email = sociallogin.account.extra_data.get('email')
-            profile.facebook_name = sociallogin.account.extra_data.get('name')
-            
-            # Extract Facebook profile picture (optional)
-            profile.facebook_profile_pic = sociallogin.account.extra_data.get('picture', {}).get('data', {}).get('url')
+            profile.facebook_email = extra_data.get('email')
+            profile.facebook_name = extra_data.get('name')
+            profile.profile_picture = extra_data.get('picture', {}).get('data', {}).get('url')
 
     profile.save()
 
@@ -114,23 +98,62 @@ def ensure_profile_on_login(request, **kwargs):
 
     if user.socialaccount_set.exists():
         social_account = user.socialaccount_set.first()
-        
+        extra_data = social_account.extra_data
+
         if social_account.provider == 'google':
-            profile.google_email = social_account.extra_data.get('email')
-            profile.google_name = social_account.extra_data.get('name')
+            profile.google_email = extra_data.get('email')
+            profile.google_name = extra_data.get('name')
 
         elif social_account.provider == 'github':
-            profile.github_email = social_account.extra_data.get('email')
-            profile.github_name = social_account.extra_data.get('login')
+            profile.github_email = extra_data.get('email')
+            profile.github_name = extra_data.get('login')
 
         elif social_account.provider == 'facebook':
-            profile.facebook_email = social_account.extra_data.get('email')
-            profile.facebook_name = social_account.extra_data.get('name')
-
-            # Extract Facebook profile picture (optional)
-            profile.facebook_profile_pic = social_account.extra_data.get('picture', {}).get('data', {}).get('url')
+            profile.facebook_email = extra_data.get('email')
+            profile.facebook_name = extra_data.get('name')
+            profile.profile_picture = extra_data.get('picture', {}).get('data', {}).get('url')
 
         profile.save()
+
 @login_required
 def profile_page(request):
-    return render(request, 'app/profile.html')
+    user = request.user
+    profile, created = Profile.objects.get_or_create(user=user)
+
+    # Extract country code and phone number
+    if profile.phone and len(profile.phone) > 3:
+        country_code = profile.phone[:3] if profile.phone.startswith("+") else ""
+        phone_number = profile.phone[3:]  # Remaining digits
+    else:
+        country_code = ""
+        phone_number = ""
+
+    if request.method == "POST":
+        first_name = request.POST.get('first_name', user.first_name)
+        last_name = request.POST.get('last_name', user.last_name)
+        gender = request.POST.get('gender', profile.gender)
+        country = request.POST.get('country', profile.country)
+        language = request.POST.get('language', profile.language)
+        country_code = request.POST.get('country_code', country_code)
+        phone_number = request.POST.get('phone_number', phone_number)
+
+        # Save user details
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+
+        # Save profile details
+        profile.gender = gender
+        profile.country = country
+        profile.language = language
+        profile.phone = f"{country_code}{phone_number}" if country_code and phone_number else None
+        profile.save()
+
+        return redirect('profile_page')
+
+    return render(request, 'app/profile.html', {
+        'profile': profile,
+        'user': user,
+        'default_country_code': country_code,
+        'phone_number': phone_number,
+    })

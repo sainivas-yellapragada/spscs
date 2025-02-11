@@ -25,7 +25,8 @@
       <br><br>
       <br><br>
       <div class="profile" id="profile">
-        <a href="{% url 'profile_page' %}"><img src="{% static 'images/profile.png' %}" alt="profile" ></a>
+        <a href="{% url 'profile_page' %}">
+        <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture"></a>
       </div>
     </div>
 
