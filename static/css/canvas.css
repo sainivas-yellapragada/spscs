@@ -1,0 +1,64 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+/* Toolbar */
+.toolbar {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar button {
+    margin: 10px 0;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background-color: #444;
+    color: white;
+    border-radius: 8px;
+}
+
+.toolbar button:hover {
+    background-color: #666;
+}
+
+/* Canvas */
+canvas {
+    border: 2px solid black;
+    background-color: white;
+}
+
+/* Save & Cancel Buttons */
+.buttons {
+    position: absolute;
+    bottom: 20px;
+}
+
+.buttons button {
+    padding: 10px 15px;
+    font-size: 16px;
+    margin: 0 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+}
+
+#saveBtn {
+    background-color: green;
+    color: white;
+}
+
+#cancelBtn {
+    background-color: red;
+    color: white;
+}

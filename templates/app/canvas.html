@@ -1,0 +1,28 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Drawing</title>
+  <link rel="stylesheet" href="{% static 'css/canvas.css' %}">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+  <div class="toolbar">
+    <button id="drawBtn">Draw</button>
+    <button id="eraseBtn">Erase</button>
+    <button id="textBtn">Text</button>
+  </div>
+
+  <canvas id="drawingCanvas"></canvas>
+
+  <div class="buttons">
+    <button id="saveBtn">Save</button>
+    <button id="cancelBtn">Cancel</button>
+  </div>
+
+  <script src="{% static 'js/canvas.js' %}"></script>
+</body>
+</html>

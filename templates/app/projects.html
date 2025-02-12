@@ -1,0 +1,93 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management</title>
+  <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="menu">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'tasks' %}">Tasks</a>
+      <a href="{% url 'projects' %}">Projects</a>
+      <a href="#">Report</a>
+      <a href="#">Notifications</a>
+      <br><br><br><br><br><br><br><br><br><br>
+      <div class="profile" id="profile">
+        <a href="#"><img src="profile.png" alt="profile"></a>
+      </div>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- Toggle Button -->
+    <span class="menu-btn" id="menuToggle">&#9776;</span>
+
+    <!-- Project Table -->
+    <h2 class="page-title">Project Management</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sl. No</th>
+          <th>Project Title</th>
+          <th>Team Members</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="projectTable">
+        <tr>
+          <td>1</td>
+          <td><a href="{% url 'canvas' %}" class="project-link">AI Chatbot</a></td>
+          <td>Alice, Bob</td>
+          <td>In Progress</td>
+          <td>
+            <select class="action-dropdown">
+              <option value="Planning">Planning</option>
+              <option value="Design">Design</option>
+              <option value="Building">Building</option>
+              <option value="Testing">Testing</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><a href="canvas.html?project=2" class="project-link">E-commerce Website</a></td>
+          <td>Charlie, Dave</td>
+          <td>Completed</td>
+          <td>
+            <select class="action-dropdown">
+              <option value="Planning">Planning</option>
+              <option value="Design">Design</option>
+              <option value="Building">Building</option>
+              <option value="Testing" selected>Testing</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><a href="canvas.html?project=3" class="project-link">Cloud Migration</a></td>
+          <td>Eve, Frank</td>
+          <td>Pending</td>
+          <td>
+            <select class="action-dropdown">
+              <option value="Planning">Planning</option>
+              <option value="Design" selected>Design</option>
+              <option value="Building">Building</option>
+              <option value="Testing">Testing</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="{% static 'js/projects.js' %}"></script>
+</body>
+</html>

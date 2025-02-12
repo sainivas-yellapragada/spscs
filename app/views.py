@@ -157,3 +157,10 @@ def profile_page(request):
         'default_country_code': country_code,
         'phone_number': phone_number,
     })
+
+def tasks(request):
+    return render(request, 'app/tasks.html')
+def projects(request):
+    return render(request, 'app/projects.html')
+def canvas(request):
+    return render(request, 'app/canvas.html')
