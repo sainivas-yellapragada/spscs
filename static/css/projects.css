@@ -1,4 +1,13 @@
-/* Sidebar Styles */
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    transition: margin-left 0.3s ease;
+}
+
+/* Sidebar */
 .sidebar {
     height: 100%;
     width: 0;
@@ -13,7 +22,7 @@
 }
 
 .sidebar a {
-    padding: 8px 8px 8px 32px;
+    padding: 10px 15px;
     text-decoration: none;
     font-size: 25px;
     color: #818181;
@@ -22,9 +31,28 @@
 }
 
 .sidebar a:hover {
-    color: rgb(255, 200, 2);
+    color: #f1f1f1;
 }
 
+.profile {
+    position: absolute;
+    bottom: 175px; /* Adjust to position above logout */
+    left: 45%;
+    transform: translateX(-50%); /* Center horizontally */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .profile img {
+    width: 70px !important; 
+    height: 70px !important;
+    border-radius: 50%;  
+    object-fit: cover;
+    display: block;
+  }
+  
+/* Sidebar Toggle */
 .menu-btn {
     font-size: 30px;
     cursor: pointer;
@@ -41,76 +69,105 @@
     padding: 20px;
 }
 
+/* Wrapper to add spacing */
+.content-wrapper {
+    margin-left: 50px; /* Moves everything slightly to the right */
+}
+.container{
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center
+}
 /* Page Title */
 .page-title {
     font-size: 24px;
-    font-weight: bold;
-    text-align: center;
     margin-bottom: 20px;
 }
 
-/* Table Styles */
+/* Add Project Button */
+.add-project-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.add-project-btn:hover {
+    background-color: #218838;
+}
+
+/* New Project Form */
+#newProjectForm {
+    background: white;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#newProjectForm input,
+#newProjectForm select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#newProjectForm button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#newProjectForm button:hover {
+    background-color: #0056b3;
+}
+
+/* Table */
 table {
     width: 100%;
     border-collapse: collapse;
+    background: white;
     margin-top: 20px;
-}
-
-table, th, td {
-    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 th, td {
-    padding: 12px;
+    border: 1px solid #ddd;
+    padding: 10px;
     text-align: left;
 }
 
 th {
-    background-color: #444;
-    color: white;
+    background-color: #f4f4f4;
 }
 
-tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-/* Capsule (Pill-Shaped) Dropdown */
-.action-dropdown {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 50px; /* Makes it pill-shaped */
+td {
     background-color: white;
+}
+
+.sidebar .logout-btn {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background-color: rgb(255, 200, 2); /* Yellow color */
+    color: rgb(0, 0, 0);
+    border: none;
     cursor: pointer;
-    outline: none;
-    font-size: 14px;
-    text-align: center;
-    appearance: none; /* Removes default dropdown styles */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
-
-/* Dropdown Container */
-.action-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Dropdown Hover & Focus */
-.action-dropdown:hover,
-.action-dropdown:focus {
-    border-color: #007BFF;
-    background-color: #f8f9fa;
-}
-
-/* Arrow Icon for Dropdown */
-.action-container::after {
-    content: "▼";
-    font-size: 12px;
-    color: #555;
-    margin-left: -20px;
-    pointer-events: none;
-    position: relative;
-    right: 15px;
-}
+    border-radius: 4px;
+    font-size: 16px;
+    }
+    
+    .sidebar .logout-btn:hover {
+    background-color: #e5b100; /* Slightly darker yellow for hover effect */
+    }
