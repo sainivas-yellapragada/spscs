@@ -1,7 +1,10 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from .models import Profile
+
+User = get_user_model()
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     """
@@ -13,34 +16,41 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def pre_social_login(self, request, sociallogin):
         """
-        Handle user data before the social login process
+        Ensure users with the same Google ID are not duplicated and are linked instead.
         """
-        super().pre_social_login(request, sociallogin)
+        google_id = sociallogin.account.extra_data.get('sub')  # 'sub' is Google user ID
+
+        if google_id:
+            try:
+                existing_user = User.objects.get(username=google_id)
+                sociallogin.connect(request, existing_user)  # Link existing user
+                return  # Stop further processing
+            except User.DoesNotExist:
+                pass  # Continue with the signup process for new users
 
         user = sociallogin.user
         if not user.pk:
-            # Ensure the user has a unique username (use Google user_id as username)
             if not user.username:
-                google_id = sociallogin.account.extra_data.get('sub')  # 'sub' is Google user ID
-                user.username = google_id  # Use the Google user ID as username
-            user.save()
+                user.username = google_id  # Set Google user ID as username
+
+        user.save()
 
         # Now handle the profile
         profile, created = Profile.objects.get_or_create(user=user)
 
-        if sociallogin.account.provider == 'google':
-            extra_data = sociallogin.account.extra_data
+        extra_data = sociallogin.account.extra_data
+        provider = sociallogin.account.provider
+
+        if provider == 'google':
             profile.google_email = extra_data.get('email')
             profile.google_name = extra_data.get('name')
             profile.profile_picture = extra_data.get('picture', '')
 
-        elif sociallogin.account.provider == 'github':
-            extra_data = sociallogin.account.extra_data
+        elif provider == 'github':
             profile.github_email = extra_data.get('email')
             profile.github_name = extra_data.get('login')
 
-        elif sociallogin.account.provider == 'facebook':  
-            extra_data = sociallogin.account.extra_data
+        elif provider == 'facebook':  
             profile.facebook_email = extra_data.get('email')
             profile.facebook_name = extra_data.get('name')
             profile.profile_picture = extra_data.get('picture', {}).get('data', {}).get('url')
