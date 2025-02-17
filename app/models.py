@@ -28,7 +28,7 @@ class Project(models.Model):
     ]
 
     title = models.CharField(max_length=255)
-    team_members = models.ManyToManyField(User)  # Changed from TextField to ManyToManyField
+    team_members = models.ManyToManyField(User)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Planning')
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -46,7 +46,7 @@
       <header>
         <h1 style="font-family:times new roman">
             Welcome, <span id="name">{{ user.first_name|default:user.username }}</span>
-          </h1>
+        </h1>
         <p>Here is your agenda for today</p>
       </header>
       <main>
@@ -94,6 +94,29 @@
         <div class="bottom">
           <div class="team">
             <h2>Team Details</h2>
+
+            <table border="1">
+              <tr>
+                <th>Member</th>
+                <th>Projects</th>
+              </tr>
+              {% if team_members_dict %}
+                  {% for member, projects in team_members_dict.items %}
+                  <tr>
+                    <td>{{ member.first_name|default:member.username }} {{ member.last_name|default:"" }}</td>
+                    <td>{{ projects|join:" | " }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="2">No team members found.</td>
+                  </tr>
+                  {% endfor %}
+              {% else %}
+                  <tr>
+                    <td colspan="2">No team members found.</td>
+                  </tr>
+              {% endif %}
+            </table>
           </div>
           <div class="project-updates">
             <h2>Project Updates</h2>

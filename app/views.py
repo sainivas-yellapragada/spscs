@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
 from .models import Profile, Project
-from django.http import HttpResponse
 from django.http import JsonResponse
 
 # Custom login page
@@ -31,7 +30,29 @@ def login_view(request):
 @login_required
 def home(request):
     profile = Profile.objects.filter(user=request.user).first()
-    return render(request, 'app/home.html', {'user': request.user, 'profile': profile})
+
+    # Get all projects the user is part of
+    projects = Project.objects.filter(team_members=request.user)
+
+    # Collect team members and their projects
+    team_members_dict = {}
+
+    for project in projects:
+        for member in project.team_members.all():
+            if member != request.user:  # Exclude the logged-in user
+                if member not in team_members_dict:
+                    team_members_dict[member] = []
+                team_members_dict[member].append(project.title)
+
+    print("Team Members Dictionary:", team_members_dict)  # Debugging print
+
+    # Pass the dictionary to the template, make sure it's properly passed as a dictionary
+    return render(request, 'app/home.html', {
+        'user': request.user,
+        'profile': profile,
+        'team_members_dict': team_members_dict
+    })
+
 
 # Logout user
 def logout_view(request):

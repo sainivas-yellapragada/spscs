@@ -26,21 +26,21 @@
 }
 
 .sidebar .logout-btn {
-position: absolute;
-bottom: 90px;
-left: 50%;
-transform: translateX(-50%);
-padding: 12px 24px;
-background-color: rgb(255, 200, 2); /* Yellow color */
-color: rgb(0, 0, 0);
-border: none;
-cursor: pointer;
-border-radius: 4px;
-font-size: 16px;
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background-color: rgb(255, 200, 2); /* Yellow color */
+  color: rgb(0, 0, 0);
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 16px;
 }
 
 .sidebar .logout-btn:hover {
-background-color: #e5b100; /* Slightly darker yellow for hover effect */
+  background-color: #e5b100; /* Slightly darker yellow for hover effect */
 }
 
 .menu-btn {
@@ -67,7 +67,7 @@ background-color: #e5b100; /* Slightly darker yellow for hover effect */
 }
 
 header {
-  text-align: left;
+  text-align: center; /* Centered header */
   margin-bottom: 20px;
 }
 
@@ -106,19 +106,43 @@ main {
   gap: 20px;
 }
 
+/* The team section now takes up space properly */
+.team {
+  max-width: 1000px; /* Limit the width to make it more compact */
+  width: 100%;
+  background: #f8f8f8;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap; /* Allows wrapping of team items if needed */
+  justify-content: flex-start;
+  flex-direction: row; /* Ensure the items are in rows */
+  gap: 10px; /* Creates space between team members */
+  margin: 0 auto; /* Center the content */
+}
+
+.team h2 {
+  text-align: center; /* Center the heading */
+  font-size: 1.8rem;
+}
+
 .calendar,
 .tasks,
-.team,
 .project-updates,
 .total-projects {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  height: 300px;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+}
+
+.project-updates,
+.total-projects {
+  grid-column: span 2; /* Make these sections span the width */
 }
 
 .calendar {
@@ -197,20 +221,64 @@ td.today {
   border-radius: 8px;
   background-color: #f9f9f9;
 }
+
 .profile {
   position: absolute;
-  bottom: 175px; /* Adjust to position above logout */
+  bottom: 175px;
   left: 45%;
-  transform: translateX(-50%); /* Center horizontally */
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .profile img {
-  width: 70px !important; 
+  width: 70px !important;
   height: 70px !important;
-  border-radius: 50%;  
+  border-radius: 50%;
   object-fit: cover;
   display: block;
+}
+
+/* Updated styles for Team Section */
+.team table td {
+  background-color: #f5f5f5; /* Light gray for individual member rows */
+  color: #333;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.team table th {
+  background-color: #ee420d;
+  color: #fff;
+  padding: 12px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.team table td:hover {
+  background-color: #e0e0e0; /* Darker gray on hover */
+}
+
+.project-updates .project-item,
+.total-projects .project-item {
+  background-color: #dcdcdc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+/* Ensuring project updates and total projects fit properly */
+.project-updates,
+.total-projects {
+  margin-top: 20px;
+}
+
+/* Adjusting font size for readability */
+.team table td,
+.project-updates .project-item,
+.total-projects .project-item {
+  font-size: 1.1rem;
 }
