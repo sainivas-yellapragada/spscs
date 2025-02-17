@@ -95,10 +95,37 @@ body {
     padding: 10px 20px;
     cursor: pointer;
     font-size: 16px;
+    position: absolute;
+    top: 52px;
+    right: 168px;
+    padding: 10px;
 }
 
 .add-project-btn:hover {
     background-color: #218838;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+td {
+    background-color: white;
 }
 
 /* New Project Form */
@@ -133,29 +160,6 @@ body {
     background-color: #0056b3;
 }
 
-/* Table */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    margin-top: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: #f4f4f4;
-}
-
-td {
-    background-color: white;
-}
-
 /* Logout Button */
 .sidebar .logout-btn {
     position: absolute;
@@ -173,15 +177,6 @@ td {
 
 .sidebar .logout-btn:hover {
     background-color: #e5b100;
-}
-
-/* Add Project Button */
-.add-project-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
 }
 
 /* Team Member Search */
@@ -242,20 +237,4 @@ td {
 
 .remove-member:hover {
     background-color: darkred;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.suggestion {
-    animation: fadeIn 0.3s ease-in-out;
 }

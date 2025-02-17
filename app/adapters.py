@@ -17,7 +17,16 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
         """
         super().pre_social_login(request, sociallogin)
 
-        profile, created = Profile.objects.get_or_create(user=sociallogin.user)
+        user = sociallogin.user
+        if not user.pk:
+            # Ensure the user has a unique username (use Google user_id as username)
+            if not user.username:
+                google_id = sociallogin.account.extra_data.get('sub')  # 'sub' is Google user ID
+                user.username = google_id  # Use the Google user ID as username
+            user.save()
+
+        # Now handle the profile
+        profile, created = Profile.objects.get_or_create(user=user)
 
         if sociallogin.account.provider == 'google':
             extra_data = sociallogin.account.extra_data
