@@ -12,10 +12,82 @@ document.addEventListener("DOMContentLoaded", function () {
             main.style.marginLeft = "250px";
         }
     });
-});
 
-// Add New Project functionality
-document.getElementById("addProjectBtn").addEventListener("click", function () {
-    const form = document.getElementById("newProjectForm");
-    form.style.display = form.style.display === "none" ? "block" : "none";
+    // Add New Project functionality
+    document.getElementById("addProjectBtn").addEventListener("click", function () {
+        const form = document.getElementById("newProjectForm");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    // Search functionality for team members
+    const teamMemberInput = document.getElementById("team_members_search");
+    const suggestionBox = document.getElementById("team_members_suggestions");
+
+    teamMemberInput.addEventListener("input", function () {
+        const query = this.value.trim().toLowerCase();
+        suggestionBox.innerHTML = ""; // Clear previous suggestions
+
+        if (query.length === 0) {
+            suggestionBox.style.display = "none";
+            return;
+        }
+
+        fetch("/api/users/")
+            .then(response => response.json())
+            .then(users => {
+                const filteredUsers = users.filter(user => user.username.toLowerCase().includes(query));
+
+                if (filteredUsers.length === 0) {
+                    suggestionBox.style.display = "none";
+                    return;
+                }
+
+                suggestionBox.style.display = "block";
+                filteredUsers.forEach(user => {
+                    const suggestion = document.createElement("div");
+                    suggestion.classList.add("suggestion");
+                    suggestion.textContent = user.username;
+                    suggestion.setAttribute("data-user-id", user.id);
+                    
+                    suggestion.addEventListener("click", function () {
+                        addTeamMember(user.id, user.username);
+                        teamMemberInput.value = "";
+                        suggestionBox.style.display = "none";
+                    });
+
+                    suggestionBox.appendChild(suggestion);
+                });
+            })
+            .catch(error => console.error("Error fetching users:", error));
+    });
+
+    function addTeamMember(userId, username) {
+        const selectedMembers = document.getElementById("selected_team_members");
+        
+        if (Array.from(selectedMembers.children).some(item => item.getAttribute("data-user-id") == userId)) {
+            return; // Avoid duplicate entries
+        }
+
+        const listItem = document.createElement("div");
+        listItem.classList.add("selected-member");
+        listItem.setAttribute("data-user-id", userId);
+        listItem.textContent = username;
+
+        const removeBtn = document.createElement("span");
+        removeBtn.classList.add("remove-member");
+        removeBtn.textContent = " ×";
+        removeBtn.addEventListener("click", function () {
+            listItem.remove();
+        });
+
+        listItem.appendChild(removeBtn);
+        selectedMembers.appendChild(listItem);
+
+        // Add hidden input to form submission
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "team_members";
+        hiddenInput.value = userId;
+        listItem.appendChild(hiddenInput);
+    }
 });

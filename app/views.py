@@ -7,6 +7,7 @@ from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
 from .models import Profile, Project
 from django.http import HttpResponse
+from django.http import JsonResponse
 
 # Custom login page
 def login_view(request):
@@ -191,3 +192,7 @@ def tasks(request):
 @login_required
 def canvas(request):
     return render(request, 'app/canvas.html')
+
+def get_users(request):
+    users = User.objects.values("id", "username")
+    return JsonResponse(list(users), safe=False)

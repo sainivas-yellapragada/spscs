@@ -56,11 +56,9 @@
                     <input type="text" id="title" name="title" required>
 
                     <label for="team_members">Team Members:</label>
-                    <select id="team_members" name="team_members" multiple required>
-                        {% for user in users %}
-                            <option value="{{ user.id }}">{{ user.username }}</option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" id="team_members_search" placeholder="Search team members...">
+                    <div id="team_members_suggestions" class="suggestions-box"></div>
+                    <div id="selected_team_members"></div>
 
                     <label for="status">Status:</label>
                     <select id="status" name="status" required>

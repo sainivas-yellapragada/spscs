@@ -14,4 +14,5 @@ urlpatterns = [
     path('projects/create/', views.create_project, name='create_project'),
     path('projects/<int:project_id>/update/', views.update_project_status, name='update_project_status'),
     path('projects/<int:project_id>/delete/', views.delete_project, name='delete_project'),
+    path("api/users/",views.get_users, name="get_users"),
 ]

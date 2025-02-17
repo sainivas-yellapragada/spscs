@@ -36,22 +36,22 @@ body {
 
 .profile {
     position: absolute;
-    bottom: 175px; /* Adjust to position above logout */
+    bottom: 175px;
     left: 45%;
-    transform: translateX(-50%); /* Center horizontally */
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  .profile img {
-    width: 70px !important; 
+}
+
+.profile img {
+    width: 70px !important;
     height: 70px !important;
-    border-radius: 50%;  
+    border-radius: 50%;
     object-fit: cover;
     display: block;
-  }
-  
+}
+
 /* Sidebar Toggle */
 .menu-btn {
     font-size: 30px;
@@ -71,14 +71,16 @@ body {
 
 /* Wrapper to add spacing */
 .content-wrapper {
-    margin-left: 50px; /* Moves everything slightly to the right */
+    margin-left: 50px;
 }
-.container{
+
+.container {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    text-align: center
+    text-align: center;
 }
+
 /* Page Title */
 .page-title {
     font-size: 24px;
@@ -154,20 +156,106 @@ td {
     background-color: white;
 }
 
+/* Logout Button */
 .sidebar .logout-btn {
     position: absolute;
     bottom: 90px;
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 24px;
-    background-color: rgb(255, 200, 2); /* Yellow color */
+    background-color: rgb(255, 200, 2);
     color: rgb(0, 0, 0);
     border: none;
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
+}
+
+.sidebar .logout-btn:hover {
+    background-color: #e5b100;
+}
+
+/* Add Project Button */
+.add-project-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+/* Team Member Search */
+#team_members_suggestions {
+    background: white;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    display: none;
+    z-index: 100;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+/* Search Suggestions */
+.suggestion {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    font-size: 14px;
+}
+
+.suggestion:hover {
+    background-color: #f0f0f0;
+}
+
+/* Selected Team Members */
+#selected_team_members {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.selected-member {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 15px;
+    font-size: 14px;
+    position: relative;
+}
+
+/* Remove Button */
+.remove-member {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    background: red;
+    padding: 2px 5px;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+.remove-member:hover {
+    background-color: darkred;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
     }
-    
-    .sidebar .logout-btn:hover {
-    background-color: #e5b100; /* Slightly darker yellow for hover effect */
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
+
+.suggestion {
+    animation: fadeIn 0.3s ease-in-out;
+}
