@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, logout, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -30,29 +30,21 @@ def login_view(request):
 @login_required
 def home(request):
     profile = Profile.objects.filter(user=request.user).first()
-
-    # Get all projects the user is part of
     projects = Project.objects.filter(team_members=request.user)
-
-    # Collect team members and their projects
     team_members_dict = {}
 
     for project in projects:
         for member in project.team_members.all():
-            if member != request.user:  # Exclude the logged-in user
+            if member != request.user:
                 if member not in team_members_dict:
                     team_members_dict[member] = []
                 team_members_dict[member].append(project.title)
 
-    print("Team Members Dictionary:", team_members_dict)  # Debugging print
-
-    # Pass the dictionary to the template, make sure it's properly passed as a dictionary
     return render(request, 'app/home.html', {
         'user': request.user,
         'profile': profile,
         'team_members_dict': team_members_dict
     })
-
 
 # Logout user
 def logout_view(request):
@@ -138,7 +130,6 @@ def profile_page(request):
     user = request.user
     profile, _ = Profile.objects.get_or_create(user=user)
 
-    # Extract country code and phone number
     country_code, phone_number = "", ""
     if profile.phone:
         country_code, phone_number = (profile.phone[:3], profile.phone[3:]) if profile.phone.startswith("+") else ("", profile.phone)
@@ -169,8 +160,8 @@ def profile_page(request):
 @login_required
 def projects(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    user_projects = Project.objects.filter(team_members=request.user)  # Show only user-related projects
-    users = User.objects.all()  # Pass all users to the template
+    user_projects = Project.objects.filter(team_members=request.user)
+    users = User.objects.all()
     return render(request, 'app/projects.html', {'projects': user_projects, 'users': users})
 
 @login_required
@@ -178,10 +169,10 @@ def create_project(request):
     if request.method == "POST":
         title = request.POST.get('title')
         status = request.POST.get('status')
-        team_member_ids = request.POST.getlist('team_members')  # Fetch multiple team members
+        team_member_ids = request.POST.getlist('team_members')
 
         project = Project.objects.create(title=title, status=status)
-        project.team_members.set(User.objects.filter(id__in=team_member_ids))  # Assign team members
+        project.team_members.set(User.objects.filter(id__in=team_member_ids))
 
         messages.success(request, "Project created successfully.")
         return redirect('projects')
@@ -217,3 +208,30 @@ def canvas(request):
 def get_users(request):
     users = User.objects.values("id", "username")
     return JsonResponse(list(users), safe=False)
+
+# Excalidraw Whiteboard View
+@login_required
+def excalidraw_whiteboard(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    # Ensure only project members can access
+    if request.user not in project.team_members.all():
+        messages.error(request, "You do not have permission to access this whiteboard.")
+        return redirect('projects')
+
+    return render(request, 'app/excalidraw.html', {'project': project})
+
+def save_excalidraw_data(request):
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+        excalidraw_data = request.POST.get('excalidraw_data')
+
+        project = Project.objects.get(id=project_id)
+        project.excalidraw_data = excalidraw_data
+        project.save()
+
+        return JsonResponse({'status': 'success'})
+    
+def get_excalidraw_data(request, project_id):
+    project = Project.objects.get(id=project_id)
+    return JsonResponse({'excalidraw_data': project.excalidraw_data})

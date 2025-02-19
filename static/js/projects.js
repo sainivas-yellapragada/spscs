@@ -92,6 +92,56 @@ document.addEventListener("DOMContentLoaded", function () {
         listItem.appendChild(hiddenInput);
     }
 
+    // Excalidraw integration
+    const excalidrawLinks = document.querySelectorAll('a[href^="https://excalidraw.com/#room="]');
+
+    excalidrawLinks.forEach(link => {
+        link.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const excalidrawUrl = link.href;
+            const projectId = link.closest("tr").querySelector("td:first-child").textContent.trim(); // Get the project ID
+
+            // Open Excalidraw in a new tab
+            const newTab = window.open(excalidrawUrl, "_blank");
+
+            newTab.addEventListener("beforeunload", function () {
+                // Save the state of the whiteboard when the tab is closed
+                saveExcalidrawState(projectId, excalidrawUrl);
+            });
+
+            // Load the state of the whiteboard
+            loadExcalidrawState(projectId, newTab);
+        });
+    });
+
+    function saveExcalidrawState(projectId, excalidrawUrl) {
+        fetch(`/projects/${projectId}/save_excalidraw_state/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector('[name="csrfmiddlewaretoken"]').value
+            },
+            body: JSON.stringify({ excalidraw_link: excalidrawUrl })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Excalidraw state saved:", data);
+        })
+        .catch(error => console.error("Error saving Excalidraw state:", error));
+    }
+
+    function loadExcalidrawState(projectId, tab) {
+        fetch(`/projects/${projectId}/load_excalidraw_state/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.excalidraw_link) {
+                    tab.location.href = data.excalidraw_link; // Redirect to saved whiteboard URL
+                }
+            })
+            .catch(error => console.error("Error loading Excalidraw state:", error));
+    }
+
     // For the search functionality with multiple selections, handle the input
     const searchInput = document.getElementById("team_members_search");
     const suggestionsList = document.getElementById("suggestions");

@@ -18,12 +18,6 @@
             <a href="{% url 'projects' %}">Projects</a>
             <a href="#">Report</a>
             <a href="#">Notifications</a>
-            <br><br>
-            <br><br>
-            <br><br>
-            <br><br>
-            <br><br>
-            <br><br>
             <div class="profile" id="profile">
                 <a href="#"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
             </div>
@@ -36,17 +30,13 @@
 
     <!-- Main Content -->
     <div id="main">
-        <!-- Toggle Button -->
         <span class="menu-btn" id="menuToggle">&#9776;</span>
 
-        <!-- Content Wrapper -->
         <div class="container">
             <h1 class="page-title">Projects</h1>
 
-            <!-- Add Project Button -->
             <button id="addProjectBtn" class="add-project-btn">+ Add Project</button>
 
-            <!-- Create New Project Form -->
             <div id="newProjectForm" style="display:none;">
                 <h2>Create New Project</h2>
                 <form method="POST" action="{% url 'create_project' %}">
@@ -87,7 +77,12 @@
                     {% for project in projects %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ project.title }}</td>
+                        <td>
+                            <a href="{{ project.excalidraw_link }}" target="_blank">
+                                {{ project.title }}
+                            </a>
+                        </td>
+                        
                         <td>
                             {% for member in project.team_members.all %}
                                 {{ member.username }}{% if not forloop.last %}, {% endif %}
