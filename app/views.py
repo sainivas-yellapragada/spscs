@@ -169,9 +169,9 @@ def profile_page(request):
 @login_required
 def projects(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    all_projects = Project.objects.all()
+    user_projects = Project.objects.filter(team_members=request.user)  # Show only user-related projects
     users = User.objects.all()  # Pass all users to the template
-    return render(request, 'app/projects.html', {'projects': all_projects, 'users': users})
+    return render(request, 'app/projects.html', {'projects': user_projects, 'users': users})
 
 @login_required
 def create_project(request):

@@ -19,9 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
         form.style.display = form.style.display === "none" ? "block" : "none";
     });
 
-    // Search functionality for team members
+    // Team Member Search functionality
     const teamMemberInput = document.getElementById("team_members_search");
     const suggestionBox = document.getElementById("team_members_suggestions");
+    const selectedMembersContainer = document.getElementById("selected_team_members");
+    let selectedUsers = [];
 
     teamMemberInput.addEventListener("input", function () {
         const query = this.value.trim().toLowerCase();
@@ -32,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        fetch("/api/users/")
+        fetch(`/api/users/`)
             .then(response => response.json())
             .then(users => {
                 const filteredUsers = users.filter(user => user.username.toLowerCase().includes(query));
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     suggestion.classList.add("suggestion");
                     suggestion.textContent = user.username;
                     suggestion.setAttribute("data-user-id", user.id);
-                    
+
                     suggestion.addEventListener("click", function () {
                         addTeamMember(user.id, user.username);
                         teamMemberInput.value = "";
@@ -61,10 +63,9 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error("Error fetching users:", error));
     });
 
+    // Add selected team member
     function addTeamMember(userId, username) {
-        const selectedMembers = document.getElementById("selected_team_members");
-        
-        if (Array.from(selectedMembers.children).some(item => item.getAttribute("data-user-id") == userId)) {
+        if (Array.from(selectedMembersContainer.children).some(item => item.getAttribute("data-user-id") == userId)) {
             return; // Avoid duplicate entries
         }
 
@@ -81,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         listItem.appendChild(removeBtn);
-        selectedMembers.appendChild(listItem);
+        selectedMembersContainer.appendChild(listItem);
 
         // Add hidden input to form submission
         const hiddenInput = document.createElement("input");
@@ -90,4 +91,47 @@ document.addEventListener("DOMContentLoaded", function () {
         hiddenInput.value = userId;
         listItem.appendChild(hiddenInput);
     }
+
+    // For the search functionality with multiple selections, handle the input
+    const searchInput = document.getElementById("team_members_search");
+    const suggestionsList = document.getElementById("suggestions");
+
+    searchInput.addEventListener("input", function () {
+        const query = searchInput.value.trim();
+
+        if (query.length === 0) {
+            suggestionsList.innerHTML = "";
+            return;
+        }
+
+        fetch(`/get_users/?query=${query}`)
+            .then(response => response.json())
+            .then(users => {
+                suggestionsList.innerHTML = "";
+
+                users.forEach(user => {
+                    const li = document.createElement("li");
+                    li.textContent = user.username;
+                    li.classList.add("suggestion-item");
+
+                    li.addEventListener("click", function () {
+                        if (!selectedUsers.includes(user.username)) {
+                            selectedUsers.push(user.username);
+                        }
+
+                        searchInput.value = selectedUsers.join(", ");
+                        suggestionsList.innerHTML = "";
+                    });
+
+                    suggestionsList.appendChild(li);
+                });
+            })
+            .catch(error => console.error("Error fetching users:", error));
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!searchInput.contains(event.target) && !suggestionsList.contains(event.target)) {
+            suggestionsList.innerHTML = "";
+        }
+    });
 });
