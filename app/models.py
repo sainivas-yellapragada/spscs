@@ -32,17 +32,26 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     team_members = models.ManyToManyField(User)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Planning')
-    excalidraw_link = models.URLField(blank=True, null=True)  # Link to Excalidraw whiteboard
-    excalidraw_data = models.JSONField(blank=True, null=True)
+    excalidraw_link = models.URLField(blank=True, null=True)  
+    room_id = models.CharField(max_length=255, unique=True, blank=True, null=True)  
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        if not self.room_id:
+            self.room_id = str(uuid.uuid4())  # Ensure unique room ID
         if not self.excalidraw_link:
-            # Generate a unique Excalidraw link if not already set
-            self.excalidraw_link = f"https://excalidraw.com/#room={uuid.uuid4()}"
-            print(f"Generated Excalidraw link for project {self.title}: {self.excalidraw_link}")  # Debugging line
+            self.excalidraw_link = f"https://excalidraw.com/#room={self.room_id}"
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
+
+
+class Whiteboard(models.Model):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="whiteboard")
+    drawing_data = models.JSONField(default=dict)  # Store Excalidraw data as JSON
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Whiteboard for {self.project.title}"

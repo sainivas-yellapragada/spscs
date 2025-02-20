@@ -5,8 +5,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
-from .models import Profile, Project
+from .models import Profile, Project,Whiteboard
 from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 # Custom login page
 def login_view(request):
@@ -221,17 +224,29 @@ def excalidraw_whiteboard(request, project_id):
 
     return render(request, 'app/excalidraw.html', {'project': project})
 
-def save_excalidraw_data(request):
-    if request.method == 'POST':
-        project_id = request.POST.get('project_id')
-        excalidraw_data = request.POST.get('excalidraw_data')
+@csrf_exempt
+def save_excalidraw_data(request, project_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            project = Project.objects.get(id=project_id)
 
-        project = Project.objects.get(id=project_id)
-        project.excalidraw_data = excalidraw_data
-        project.save()
+            whiteboard, created = Whiteboard.objects.get_or_create(project=project)
+            whiteboard.drawing_data = data.get("drawing_data", {})
+            whiteboard.save()
 
-        return JsonResponse({'status': 'success'})
-    
+            return JsonResponse({"status": "success", "message": "Whiteboard saved."})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
 def get_excalidraw_data(request, project_id):
-    project = Project.objects.get(id=project_id)
-    return JsonResponse({'excalidraw_data': project.excalidraw_data})
+    try:
+        project = Project.objects.get(id=project_id)
+        whiteboard = Whiteboard.objects.filter(project=project).first()
+
+        return JsonResponse({
+            "status": "success",
+            "drawing_data": whiteboard.drawing_data if whiteboard else {}
+        })
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)

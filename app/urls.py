@@ -14,8 +14,8 @@ urlpatterns = [
     path('projects/create/', views.create_project, name='create_project'),
     path('projects/<int:project_id>/update/', views.update_project_status, name='update_project_status'),
     path('projects/<int:project_id>/delete/', views.delete_project, name='delete_project'),
-    path("api/users/",views.get_users, name="get_users"),
+    path("api/users/", views.get_users, name="get_users"),
     path('get_users/', views.get_users, name='get_users'),
-    path('save-excalidraw/', views.save_excalidraw_data, name='save_excalidraw'),
-    path('get-excalidraw-data/<int:project_id>/', views.get_excalidraw_data, name='get_excalidraw_data'),
+    path('projects/<int:project_id>/save_excalidraw_data/', views.save_excalidraw_data, name="save_excalidraw_data"),
+    path('projects/<int:project_id>/get_excalidraw_data/', views.get_excalidraw_data, name="get_excalidraw_data"),
 ]
