@@ -12,49 +12,52 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   }
 });
 
-// Calendar initialization (existing code)
-document.addEventListener("DOMContentLoaded", () => {
-const currentMonthDiv = document.getElementById("currentMonth");
-const calendarBody = document.getElementById("calendarBody");
+// Calendar functionality
+document.addEventListener("DOMContentLoaded", function () {
+  let menuToggle = document.getElementById("menuToggle");
+  let sidebar = document.getElementById("sidebar");
 
-const today = new Date();
-const currentMonth = today.getMonth();
-const currentYear = today.getFullYear();
+  menuToggle.addEventListener("click", function () {
+      sidebar.classList.toggle("open");
+  });
 
-const monthNames = [
-  "January", "February", "March", "April", "May", "June", "July",
-  "August", "September", "October", "November", "December"
-];
+  function loadCalendar() {
+    const today = new Date();
+    const month = today.toLocaleString("default", { month: "long" });
+    document.getElementById("currentMonth").textContent = month;
 
-currentMonthDiv.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const calendarBody = document.getElementById("calendarBody");
+    calendarBody.innerHTML = "";
 
-calendarBody.innerHTML = "";
-let row = document.createElement("tr");
+    let startDay = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+    let totalDays = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
 
-for (let i = 0; i < firstDay; i++) {
-  const cell = document.createElement("td");
-  row.appendChild(cell);
-}
+    let row = document.createElement("tr");
+    for (let i = 0; i < startDay; i++) {
+      row.appendChild(document.createElement("td"));
+    }
 
-for (let day = 1; day <= daysInMonth; day++) {
-  if (row.children.length === 7) {
+    for (let day = 1; day <= totalDays; day++) {
+      const dayCell = document.createElement("td");
+      dayCell.textContent = day;
+      row.appendChild(dayCell);
+
+      if ((startDay + day) % 7 === 0) {
+        calendarBody.appendChild(row);
+        row = document.createElement("tr");
+      }
+    }
     calendarBody.appendChild(row);
-    row = document.createElement("tr");
+
+    // Highlight today
+    const todayCell = calendarBody.querySelectorAll("td");
+    const todayDate = today.getDate();
+    todayCell.forEach((cell) => {
+      if (parseInt(cell.textContent) === todayDate) {
+        cell.classList.add("today");
+      }
+    });
   }
 
-  const cell = document.createElement("td");
-  cell.textContent = day;
-
-  if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
-    cell.classList.add("today");
-  }
-
-  row.appendChild(cell);
-}
-
-if (row.children.length > 0) {
-  calendarBody.appendChild(row);
-}
+  loadCalendar();
 });

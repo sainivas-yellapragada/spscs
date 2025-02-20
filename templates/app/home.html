@@ -1,128 +1,120 @@
-{% load static %}
+{% load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agenda Dashboard</title>
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">  
   <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="menu">
-      <br>
       <a href="{% url 'home' %}">Home</a>
       <a href="{% url 'tasks' %}">Tasks</a>
       <a href="{% url 'projects' %}">Projects</a>
       <a href="#">Report</a>
       <a href="#">Notifications</a>
       <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
       <div class="profile" id="profile">
         <a href="{% url 'profile_page' %}">
-        <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture"></a>
+          <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
+        </a>
       </div>
     </div>
-
-    <!-- Added logout button at the bottom -->
     <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
       {% csrf_token %}
       <button type="submit" class="logout-btn">Logout</button>
-    </form>    
+    </form>
   </div>
 
+  <!-- Main Content -->
   <div id="main">
-    <!-- Toggle Button -->
     <span class="menu-btn" id="menuToggle">&#9776;</span>
 
-    <!-- Main Content -->
     <div class="container">
       <header>
-        <h1 style="font-family:times new roman">
-            Welcome, <span id="name">{{ user.first_name|default:user.username }}</span>
-        </h1>
+        <h1>Welcome, <span id="name">{{ user.first_name|default:user.username }}</span></h1>
         <p>Here is your agenda for today</p>
       </header>
+
       <main>
-        <!-- Left Section -->
-        <div class="left">
+        <!-- Calendar & Tasks Section -->
+        <div class="section-container calendar-tasks-container">
           <div class="calendar">
-            <h2>Calendar</h2>
+            <div class="section-heading"><b>Calendar</b></div>
             <div id="currentMonth" class="month"></div>
             <table>
               <thead>
                 <tr>
-                  <th>SUN</th>
-                  <th>MON</th>
-                  <th>TUE</th>
-                  <th>WED</th>
-                  <th>THU</th>
-                  <th>FRI</th>
-                  <th>SAT</th>
+                  <th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th>
                 </tr>
               </thead>
               <tbody id="calendarBody"></tbody>
             </table>
           </div>
-        </div>
 
-        <!-- Right Section -->
-        <div class="top-right">
           <div class="tasks">
-            <h2>Tasks</h2>
+            <div class="section-heading"><b>Tasks</b></div>
             <div class="task-columns">
               <div class="task-column">
                 <h3>Urgent</h3>
+                <div class="task-content"></div>
               </div>
               <div class="task-column">
                 <h3>Minor</h3>
+                <div class="task-content"></div>
               </div>
               <div class="task-column">
                 <h3>Pending</h3>
+                <div class="task-content"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Bottom Section -->
-        <div class="bottom">
+        <!-- Team, Project Updates & Total Projects -->
+        <div class="section-container team-projects-container">
           <div class="team">
-            <h2>Team Details</h2>
-
-            <table border="1">
+            <div class="section-heading"><b>Team Details</b></div>
+            <table>
               <tr>
-                <th>Member</th>
-                <th>Projects</th>
+                <th>Member</th><th>Projects</th>
               </tr>
-              {% if team_members_dict %}
-                  {% for member, projects in team_members_dict.items %}
-                  <tr>
-                    <td>{{ member.first_name|default:member.username }} {{ member.last_name|default:"" }}</td>
-                    <td>{{ projects|join:" | " }}</td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="2">No team members found.</td>
-                  </tr>
-                  {% endfor %}
-              {% else %}
-                  <tr>
-                    <td colspan="2">No team members found.</td>
-                  </tr>
-              {% endif %}
+              {% for member, projects in team_members_dict.items %}
+              <tr>
+                <td>{{ member.first_name|default:member.username }} {{ member.last_name|default:"" }}</td>
+                <td>{{ projects|join:" | " }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="2">No team members found.</td></tr>
+              {% endfor %}
             </table>
           </div>
+
           <div class="project-updates">
-            <h2>Project Updates</h2>
+            <div class="section-heading"><b>Project Updates</b></div>
+            <div class="content"></div>
           </div>
+
           <div class="total-projects">
-            <h2>Total Projects</h2>
+            <div class="section-heading"><b>Total Projects</b></div>
+            <div class="content"></div>
           </div>
         </div>
       </main>
