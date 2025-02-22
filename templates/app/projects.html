@@ -19,7 +19,7 @@
             <a href="#">Report</a>
             <a href="#">Notifications</a>
             <div class="profile" id="profile">
-                <a href="#"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
+                <a href="{% url 'profile_page' %}"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
             </div>
         </div>
         <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">

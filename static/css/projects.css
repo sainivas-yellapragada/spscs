@@ -1,6 +1,6 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
+    /*font-family: Arial, sans-serif;*/
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
@@ -22,7 +22,7 @@ body {
 }
 
 .sidebar a {
-    padding: 10px 15px;
+    padding: 8px 8px 8px 32px ;
     text-decoration: none;
     font-size: 25px;
     color: #818181;
@@ -31,7 +31,7 @@ body {
 }
 
 .sidebar a:hover {
-    color: #f1f1f1;
+    color: rgb(255, 200, 2);
 }
 
 .profile {

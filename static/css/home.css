@@ -1,9 +1,14 @@
 /* General Styles */
 body {
-  font-family: Arial, sans-serif;
+  /*font-family: Arial, sans-serif;*/
   background: #f5f5f5;
   margin: 0;
   padding: 0;
+}
+#main {
+  transition: margin-left 0.5s;
+  padding: 20px;
+  margin-left:0;
 }
 
 .container {
@@ -90,7 +95,7 @@ header p {
 .profile {
   position: absolute;
   bottom: 175px;
-  left: 50%;
+  left: 45%;
   transform: translateX(-50%);
   display: flex;
   justify-content: center;
