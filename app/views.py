@@ -103,6 +103,7 @@ def populate_profile_on_signup(request, sociallogin=None, **kwargs):
             setattr(profile, email_field, extra_data.get('email'))
             setattr(profile, name_field, extra_data.get('name'))
 
+
         profile.save()
 
 # Signal: Ensure Profile exists after Login
@@ -162,10 +163,16 @@ def profile_page(request):
 
 @login_required
 def projects(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+    profile, _ = Profile.objects.get_or_create(user=request.user)  # Ensure profile exists
     user_projects = Project.objects.filter(team_members=request.user)
     users = User.objects.all()
-    return render(request, 'app/projects.html', {'projects': user_projects, 'users': users})
+    
+    return render(request, 'app/projects.html', {
+        'projects': user_projects, 
+        'users': users,
+        'profile': profile  # Add profile to context
+    })
+
 
 @login_required
 def create_project(request):
@@ -201,8 +208,9 @@ def delete_project(request, project_id):
 
 @login_required
 def tasks(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'app/tasks.html')
+    profile, _ = Profile.objects.get_or_create(user=request.user)  # Ensure profile exists
+    return render(request, 'app/tasks.html', {'profile': profile})  # Pass profile to template
+
 
 @login_required
 def canvas(request):
@@ -250,3 +258,7 @@ def get_excalidraw_data(request, project_id):
         })
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+def report(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    return render(request, 'app/report.html',{'profile': profile})

@@ -16,7 +16,7 @@
             <a href="{% url 'home' %}">Home</a>
             <a href="{% url 'tasks' %}">Tasks</a>
             <a href="{% url 'projects' %}">Projects</a>
-            <a href="#">Report</a>
+            <a href="{% url 'report' %}">Report</a>
             <a href="#">Notifications</a>
             <div class="profile" id="profile">
                 <a href="{% url 'profile_page' %}"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
