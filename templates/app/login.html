@@ -29,9 +29,9 @@
         <!-- Login Form -->
         <div class="form-box Login">
             <h2 class="animation" style="--D:0; --S:21">Login</h2>
-            <form method="POST" action="{% url 'manual_login' %}"> <!-- Django URL for login -->
-                {% csrf_token %} <!-- CSRF token for security -->
-                <input type="hidden" name="login_type" value="employee">
+            <form method="POST" action="{% url 'manual_login' %}">
+                {% csrf_token %}
+                <input type="hidden" name="login_type" id="login_type" value="employee">
                 <div class="input-box animation" style="--D:1; --S:22">
                     <input type="text" name="username" placeholder="Username" required>
                     <box-icon type='solid' name='user'></box-icon>
@@ -46,8 +46,8 @@
                 <div class="social-login animation" style="--D:4; --S:25">
                     <p>Or login with:</p>
                     <div class="social-icons">
-                        <a href="{% provider_login_url 'google' %}" class="social-btn google"><box-icon name='google' type='logo'></box-icon></a>
-                        <a href="{% provider_login_url 'github' %}" class="social-btn github"><box-icon name='github' type='logo'></box-icon></a>
+                        <a href="{% provider_login_url 'google' %}?login_type=employee" class="social-btn google" id="google-login"><box-icon name='google' type='logo'></box-icon></a>
+                        <a href="{% provider_login_url 'github' %}?login_type=employee" class="social-btn github" id="github-login"><box-icon name='github' type='logo'></box-icon></a>
                     </div>
                 </div>
                 <div class="regi-link animation" style="--D:5; --S:26">
@@ -64,9 +64,8 @@
         <!-- Registration Form -->
         <div class="form-box Register">
             <h2 class="animation" style="--li:17; --S:0">Registration</h2>
-            <form method="POST" action="{% url 'register' %}"> <!-- Django URL for registration -->
-                {% csrf_token %} <!-- CSRF token for security -->
-                <!-- Added a spacer div to push the title down slightly -->
+            <form method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
                 <div class="spacer animation" style="--li:16; --S:-1"></div>
                 <div class="input-box animation" style="--li:18; --S:1">
                     <input type="text" name="username" placeholder="Username" required>
@@ -84,7 +83,6 @@
                     <input type="password" name="password2" placeholder="Confirm Password" required>
                     <box-icon name='lock-alt' type='solid'></box-icon>
                 </div>
-                <!-- Added a wrapper div to match login button spacing -->
                 <div class="input-box-wrapper animation" style="--li:22; --S:5">
                     <button type="submit" class="btn">Register</button>
                 </div>

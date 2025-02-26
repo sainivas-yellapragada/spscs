@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'app.middleware.LoginTypeMiddleware',
 ]
 
 ROOT_URLCONF = 'project_management_system.urls'
@@ -158,7 +159,8 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-LOGIN_REDIRECT_URL = '/home'  # Redirect to home page after login
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/social-login-redirect/'
+LOGIN_REDIRECT_URL = '/social-login-redirect/' # Redirect to home page after login
 LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redirect to login page after logout
 
 

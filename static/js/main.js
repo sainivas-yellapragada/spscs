@@ -35,11 +35,9 @@ toggleButtons.forEach(button => {
 
         // Change color and trigger animation
         if (loginType === 'admin') {
-            updatePrimaryColor('#bb00ff');
-            triggerPulse();
+            updatePrimaryColor('#bb00ff');  // Purple for Admin
         } else {
-            updatePrimaryColor('#0099ff');
-            triggerPulse();
+            updatePrimaryColor('#0099ff');  // Blue for Employee
         }
     });
 });
@@ -47,13 +45,4 @@ toggleButtons.forEach(button => {
 // Functions
 function updatePrimaryColor(color) {
     document.documentElement.style.setProperty('--primary-color', color);
-}
-
-function triggerPulse() {
-    container.classList.add('pulse');
-    document.querySelector('.login-type').classList.add('pulse');
-    setTimeout(() => {
-        container.classList.remove('pulse');
-        document.querySelector('.login-type').classList.remove('pulse');
-    }, 300);
 }

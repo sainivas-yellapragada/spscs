@@ -5,31 +5,44 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
-from .models import Profile, Project,Whiteboard
+from .models import Profile, Project, Whiteboard
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Custom login page
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+        login_type = request.POST.get('login_type', 'employee')
+        
+        logger.debug(f"Manual login attempt: username={username}, login_type={login_type}")
+        request.session['login_type'] = login_type
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             auth_login(request, user)
+            Profile.objects.get_or_create(user=user)
+            logger.debug(f"User {user.username} logged in manually, login_type={login_type}")
             messages.success(request, "Logged in successfully!")
-            return redirect('home')  
+            return redirect('admin_home' if login_type == 'admin' else 'home')
         else:
             messages.error(request, "Invalid credentials. Please try again.")
+            logger.debug("Manual login failed: invalid credentials")
             return redirect('login_view')
 
+    login_type = request.GET.get('login_type', request.session.get('login_type', 'employee'))
+    request.session['login_type'] = login_type
+    logger.debug(f"Login page GET: login_type={login_type}, session={request.session['login_type']}")
     return render(request, 'app/login.html')
 
-# Home page (protected)
+# Home page (protected) - Employee landing page
 @login_required
 def home(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -43,15 +56,33 @@ def home(request):
                     team_members_dict[member] = []
                 team_members_dict[member].append(project.title)
 
+    logger.debug(f"Rendering home for {request.user.username}, login_type={request.session.get('login_type', 'employee')}")
     return render(request, 'app/home.html', {
         'user': request.user,
         'profile': profile,
         'team_members_dict': team_members_dict
     })
 
+# Admin Home page (protected) - Admin landing page
+@login_required
+def admin_home(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    all_projects = Project.objects.all()
+    all_users = User.objects.all()
+
+    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={request.session.get('login_type', 'employee')}")
+    return render(request, 'app/adminhome.html', {
+        'user': request.user,
+        'profile': profile,
+        'all_projects': all_projects,
+        'all_users': all_users
+    })
+
 # Logout user
 def logout_view(request):
+    logger.debug(f"Logging out user {request.user.username}")
     logout(request)
+    request.session.pop('login_type', None)
     return redirect('index')
 
 # User registration (Manual)
@@ -88,6 +119,9 @@ def populate_profile_on_signup(request, sociallogin=None, **kwargs):
     user = kwargs['user']
     profile, _ = Profile.objects.get_or_create(user=user)
 
+    login_type = request.session.get('login_type', 'employee')
+    logger.debug(f"Social signup for {user.username}, login_type={login_type}")
+
     if sociallogin:
         extra_data = sociallogin.account.extra_data
         profile.profile_picture = extra_data.get('picture', '')
@@ -103,31 +137,16 @@ def populate_profile_on_signup(request, sociallogin=None, **kwargs):
             setattr(profile, email_field, extra_data.get('email'))
             setattr(profile, name_field, extra_data.get('name'))
 
-
         profile.save()
 
-# Signal: Ensure Profile exists after Login
-@receiver(user_logged_in)
-def ensure_profile_on_login(request, **kwargs):
-    user = kwargs['user']
-    profile, _ = Profile.objects.get_or_create(user=user)
-
-    if user.socialaccount_set.exists():
-        social_account = user.socialaccount_set.first()
-        extra_data = social_account.extra_data
-
-        provider_map = {
-            'google': ('google_email', 'google_name'),
-            'github': ('github_email', 'github_name'),
-            'facebook': ('facebook_email', 'facebook_name')
-        }
-
-        if social_account.provider in provider_map:
-            email_field, name_field = provider_map[social_account.provider]
-            setattr(profile, email_field, extra_data.get('email'))
-            setattr(profile, name_field, extra_data.get('name'))
-
-        profile.save()
+# Custom redirect handler for social logins
+def social_login_redirect(request):
+    if request.user.is_authenticated:
+        login_type = request.session.get('login_type', 'employee')
+        logger.debug(f"Social login redirect: {request.user.username}, login_type={login_type}")
+        return redirect('admin_home' if login_type == 'admin' else 'home')
+    logger.debug("Social login redirect: User not authenticated")
+    return redirect('login_view')
 
 @login_required
 def profile_page(request):
@@ -163,16 +182,15 @@ def profile_page(request):
 
 @login_required
 def projects(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)  # Ensure profile exists
+    profile, _ = Profile.objects.get_or_create(user=request.user)
     user_projects = Project.objects.filter(team_members=request.user)
     users = User.objects.all()
     
     return render(request, 'app/projects.html', {
         'projects': user_projects, 
         'users': users,
-        'profile': profile  # Add profile to context
+        'profile': profile
     })
-
 
 @login_required
 def create_project(request):
@@ -208,9 +226,8 @@ def delete_project(request, project_id):
 
 @login_required
 def tasks(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)  # Ensure profile exists
-    return render(request, 'app/tasks.html', {'profile': profile})  # Pass profile to template
-
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    return render(request, 'app/tasks.html', {'profile': profile})
 
 @login_required
 def canvas(request):
@@ -220,12 +237,10 @@ def get_users(request):
     users = User.objects.values("id", "username")
     return JsonResponse(list(users), safe=False)
 
-# Excalidraw Whiteboard View
 @login_required
 def excalidraw_whiteboard(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
-    # Ensure only project members can access
     if request.user not in project.team_members.all():
         messages.error(request, "You do not have permission to access this whiteboard.")
         return redirect('projects')
@@ -261,4 +276,4 @@ def get_excalidraw_data(request, project_id):
 
 def report(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'app/report.html',{'profile': profile})
+    return render(request, 'app/report.html', {'profile': profile})

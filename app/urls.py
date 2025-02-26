@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.login_view, name='login_view'),
     path('logout/', views.logout_view, name='logout'),
     path('home/', login_required(views.home), name='home'),
+    path('admin-home/', login_required(views.admin_home), name='admin_home'),
     path('register/', views.manual_register, name='register'),
     path('login/', views.login_view, name='manual_login'),
     path('profile/', views.profile_page, name='profile_page'),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('get_users/', views.get_users, name='get_users'),
     path('projects/<int:project_id>/save_excalidraw_data/', views.save_excalidraw_data, name="save_excalidraw_data"),
     path('projects/<int:project_id>/get_excalidraw_data/', views.get_excalidraw_data, name="get_excalidraw_data"),
+    path('social-login-redirect/', views.social_login_redirect, name='social_login_redirect'),
 ]
