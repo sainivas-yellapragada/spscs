@@ -6,96 +6,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login/Signup Form</title>
-    
+    <title>Login & Signup Form</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
-
-    <!-- Hidden div to pass Django messages -->
+    <!-- Hidden div for Django messages -->
     <div id="django-messages" style="display: none;">
         {% for message in messages %}
             <p class="message">{{ message }}</p>
         {% endfor %}
     </div>
 
+    <div class="login-type">
+        <button class="toggle-btn active" data-type="employee">Employee Login</button>
+        <button class="toggle-btn" data-type="admin">Admin Login</button>
+    </div>
+
     <div class="container">
+        <div class="curved-shape"></div>
+        <div class="curved-shape2"></div>
+
         <!-- Login Form -->
-        <div class="form-box login">
-            <form method="POST" action="{% url 'manual_login' %}">  
-                {% csrf_token %}
-                <h1>Login</h1>
-                <div class="input-box">
+        <div class="form-box Login">
+            <h2 class="animation" style="--D:0; --S:21">Login</h2>
+            <form method="POST" action="{% url 'manual_login' %}"> <!-- Django URL for login -->
+                {% csrf_token %} <!-- CSRF token for security -->
+                <input type="hidden" name="login_type" value="employee">
+                <div class="input-box animation" style="--D:1; --S:22">
                     <input type="text" name="username" placeholder="Username" required>
-                    <i class='bx bxs-user'></i>
+                    <box-icon type='solid' name='user'></box-icon>
                 </div>
-                <div class="input-box">
+                <div class="input-box animation" style="--D:2; --S:23">
                     <input type="password" name="password" placeholder="Password" required>
-                    <i class='bx bxs-lock-alt'></i>
+                    <box-icon name='lock-alt' type='solid'></box-icon>
                 </div>
-                <div class="forgot-link">
-                    <a href="{% url 'account_reset_password' %}">Forgot Password?</a>
+                <div class="input-box animation" style="--D:3; --S:24">
+                    <button class="btn" type="submit">Login</button>
                 </div>
-                <button type="submit" class="btn">Login</button>
-                <p>or login with social platforms</p>
-                <div class="social-icons">
-                    <a href="{% provider_login_url 'google' %}"><i class='bx bxl-google'></i></a>
-                    <a href="{% provider_login_url 'github' %}"><i class='bx bxl-github'></i></a>
-                    <a href="{% provider_login_url 'facebook' %}"><i class='bx bxl-facebook'></i></a>
+                <div class="social-login animation" style="--D:4; --S:25">
+                    <p>Or login with:</p>
+                    <div class="social-icons">
+                        <a href="{% provider_login_url 'google' %}" class="social-btn google"><box-icon name='google' type='logo'></box-icon></a>
+                        <a href="{% provider_login_url 'github' %}" class="social-btn github"><box-icon name='github' type='logo'></box-icon></a>
+                    </div>
+                </div>
+                <div class="regi-link animation" style="--D:5; --S:26">
+                    <p>Don't have an account? <br> <a href="#" class="SignUpLink">Sign Up</a></p>
                 </div>
             </form>
+        </div>
+
+        <div class="info-content Login">
+            <h2 class="animation" style="--D:0; --S:20">WELCOME BACK!</h2>
+            <p class="animation" style="--D:1; --S:21">We are happy to have you with us again. If you need anything, we are here to help.</p>
         </div>
 
         <!-- Registration Form -->
-        <div class="form-box register">
-            <form method="POST" action="{% url 'register' %}">  
-                {% csrf_token %}
-                <h1>Registration</h1>
-                <div class="input-box">
+        <div class="form-box Register">
+            <h2 class="animation" style="--li:17; --S:0">Registration</h2>
+            <form method="POST" action="{% url 'register' %}"> <!-- Django URL for registration -->
+                {% csrf_token %} <!-- CSRF token for security -->
+                <!-- Added a spacer div to push the title down slightly -->
+                <div class="spacer animation" style="--li:16; --S:-1"></div>
+                <div class="input-box animation" style="--li:18; --S:1">
                     <input type="text" name="username" placeholder="Username" required>
-                    <i class='bx bxs-user'></i>
+                    <box-icon type='solid' name='user'></box-icon>
                 </div>
-                <div class="input-box">
+                <div class="input-box animation" style="--li:19; --S:2">
                     <input type="email" name="email" placeholder="Email" required>
-                    <i class='bx bxs-envelope'></i>
+                    <box-icon name='envelope' type='solid'></box-icon>
                 </div>
-                <div class="input-box">
+                <div class="input-box animation" style="--li:20; --S:3">
                     <input type="password" name="password1" placeholder="Password" required>
-                    <i class='bx bxs-lock-alt'></i>
+                    <box-icon name='lock-alt' type='solid'></box-icon>
                 </div>
-                <div class="input-box">
+                <div class="input-box animation" style="--li:21; --S:4">
                     <input type="password" name="password2" placeholder="Confirm Password" required>
-                    <i class='bx bxs-lock-alt'></i>
+                    <box-icon name='lock-alt' type='solid'></box-icon>
                 </div>
-                <button type="submit" class="btn">Register</button>
-                <p>or register with social platforms</p>
-                <div class="social-icons">
-                    <a href="{% provider_login_url 'google' %}"><i class='bx bxl-google'></i></a>
-                    <a href="{% provider_login_url 'github' %}"><i class='bx bxl-github'></i></a>
-                    <a href="{% provider_login_url 'facebook' %}"><i class='bx bxl-facebook'></i></a>
+                <!-- Added a wrapper div to match login button spacing -->
+                <div class="input-box-wrapper animation" style="--li:22; --S:5">
+                    <button type="submit" class="btn">Register</button>
+                </div>
+                <div class="social-login animation" style="--li:23; --S:6">
+                    <p>Or register with:</p>
+                    <div class="social-icons">
+                        <a href="{% provider_login_url 'google' %}" class="social-btn google"><box-icon name='google' type='logo'></box-icon></a>
+                        <a href="{% provider_login_url 'github' %}" class="social-btn github"><box-icon name='github' type='logo'></box-icon></a>
+                    </div>
+                </div>
+                <div class="regi-link animation" style="--li:24; --S:7">
+                    <p>Already have an account? <br> <a href="#" class="SignInLink">Sign In</a></p>
                 </div>
             </form>
         </div>
 
-        <!-- Toggle Panels -->
-        <div class="toggle-box">
-            <div class="toggle-panel toggle-left">
-                <h1>Hello, Welcome!</h1>
-                <p>Don't have an account?</p>
-                <button class="btn register-btn">Register</button>
-            </div>
-
-            <div class="toggle-panel toggle-right">
-                <h1>Welcome Back!</h1>
-                <p>Already have an account?</p>
-                <button class="btn login-btn">Login</button>
-            </div>
+        <div class="info-content Register">
+            <h2 class="animation" style="--li:17; --S:0">WELCOME!</h2>
+            <p class="animation" style="--li:18; --S:1">We’re delighted to have you here. If you need any assistance, feel free to reach out.</p>
         </div>
     </div>
-    
+
     <script src="{% static 'js/main.js' %}"></script>
-    
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
 </body>
 </html>

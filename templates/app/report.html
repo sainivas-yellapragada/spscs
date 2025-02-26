@@ -1,4 +1,4 @@
-{% load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,35 +29,37 @@
             <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
                 {% csrf_token %}
                 <button type="submit" class="logout-btn">Logout</button>
-              </form>
+            </form>
         </div>
     </div>
 
     <!-- Main Content -->
     <div id="main-content">
-        <span class="menu-btn" id="menuToggle">&#9776;</span>
+        <span class="menu-btn" id="menuToggle">☰</span>
         
         <div class="header">
             <div class="circle-container">
                 <div class="circle-item">
-                    <h3>Total Projects</h3> <!-- Added Title -->
+                    <h3>Total Projects</h3>
                     <div class="circle">
                         <svg width="140" height="140">
                             <circle cx="70" cy="70" r="60" stroke="#f5c6d6" stroke-width="15" fill="none"/>
-                            <circle cx="70" cy="70" r="60" stroke="blue" stroke-width="15" fill="none" stroke-dasharray="188" stroke-dashoffset="45"/>
+                            <circle cx="70" cy="70" r="60" stroke="blue" stroke-width="15" fill="none" 
+                                stroke-dasharray="377" stroke-dashoffset="{{ projects_offset }}"/>
                         </svg>
-                        <p>75</p>  <!-- Number inside the circle -->
+                        <p>{{ total_projects }}</p>
                     </div>
                 </div>
 
                 <div class="circle-item">
-                    <h3>Closed Tasks</h3> <!-- Added Title -->
+                    <h3>Closed Tasks</h3>
                     <div class="circle">
                         <svg width="140" height="140">
                             <circle cx="70" cy="70" r="60" stroke="#f5c6d6" stroke-width="15" fill="none"/>
-                            <circle cx="70" cy="70" r="60" stroke="blue" stroke-width="15" fill="none" stroke-dasharray="180" stroke-dashoffset="85"/>
+                            <circle cx="70" cy="70" r="60" stroke="blue" stroke-width="15" fill="none" 
+                                stroke-dasharray="377" stroke-dashoffset="{{ tasks_offset }}"/>
                         </svg>
-                        <p>50</p>  <!-- Number inside the circle -->
+                        <p>{{ total_tasks }}</p> <!-- This can be updated to closed_tasks later -->
                     </div>
                 </div>
             </div>
@@ -80,13 +82,19 @@
                 </tr>
             </thead>
             <tbody>
+                {% for project in projects %}
                 <tr>
-                    <td>XYZ</td>
-                    <td>XYZ</td>
-                    <td>01-01-01</td>
-                    <td>Delayed</td>
-                    <td>25%</td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.manager }}</td>
+                    <td>{{ project.due_date }}</td>
+                    <td>{{ project.status }}</td>
+                    <td>{{ project.progress }}%</td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No projects available.</td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
