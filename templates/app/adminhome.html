@@ -12,18 +12,18 @@
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="menu">
-      <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'tasks' %}">Tasks</a>
+      <a href="{% url 'admin_home' %}">Home</a>
+      <a href="{% url 'admin_tasks' %}">Tasks</a>
       <a href="{% url 'projects' %}">Projects</a>
-      <a href="#">Report</a>
+      <a href="{% url 'report' %}">Report</a>
       <a href="#">Notifications</a>
       <div class="profile" id="profile">
         <a href="{% url 'profile_page' %}">
-          <img src="profile.png" alt="Profile Picture">
+          <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
         </a>
       </div>
     </div>
-    <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+    <form action="{% url 'logout' %}" method="post" class="sidebar-logout-form">
       {% csrf_token %}
       <button type="submit" class="logout-btn">Logout</button>
     </form>
@@ -31,7 +31,7 @@
 
   <!-- Main Content -->
   <div id="main">
-    <span class="menu-btn" id="menuToggle">&#9776;</span>
+    <span class="menu-btn" id="menuToggle">☰</span>
 
     <div class="container">
       <header>
@@ -60,11 +60,27 @@
             <div class="task-columns">
               <div class="task-column">
                 <h3>Task</h3>
-                <div class="task-content"></div>
+                <div class="task-content">
+                  {% for task in tasks %}
+                    <div class="task-item">{{ task.title }}</div>
+                  {% empty %}
+                    <p>No tasks assigned</p>
+                  {% endfor %}
+                </div>
               </div>
               <div class="task-column">
                 <h3>User</h3>
-                <div class="task-content"></div>
+                <div class="task-content">
+                  {% for task in tasks %}
+                    <div class="task-item">
+                      {% for user in task.assigned_to.all %}
+                        {{ user.username }}{% if not forloop.last %}, {% endif %}
+                      {% endfor %}
+                    </div>
+                  {% empty %}
+                    <p>No users assigned</p>
+                  {% endfor %}
+                </div>
               </div>
             </div>
           </div>
@@ -78,20 +94,34 @@
               <tr>
                 <th>Team Name</th><th>Assigned Members</th>
               </tr>
-              {% for member, projects in team_members_dict.items %}
+              {% for project, users in team_members_dict.items %}
               <tr>
-                <td>{{ member.first_name|default:member.username }} {{ member.last_name|default:"" }}</td>
-                <td>{{ projects|join:" | " }}</td>
+                <td>{{ project.title }}</td>
+                <td>
+                  {% for user in users %}
+                    {{ user.username }}{% if not forloop.last %}, {% endif %}
+                  {% empty %}
+                    None
+                  {% endfor %}
+                </td>
               </tr>
               {% empty %}
-              <tr><td colspan="2">No team members found.</td></tr>
+              <tr><td colspan="2">No teams found.</td></tr>
               {% endfor %}
             </table>
           </div>
 
           <div class="project-updates">
             <div class="section-heading centered-heading"><b>Ongoing Projects</b></div>
-            <div class="content"></div>
+            <div class="content">
+              {% for project in all_projects %}
+                {% if project.status == 'In Progress' %}
+                  <div class="project-item">{{ project.title }}</div>
+                {% endif %}
+              {% empty %}
+                <p>No ongoing projects</p>
+              {% endfor %}
+            </div>
           </div>
         </div>
       </main>

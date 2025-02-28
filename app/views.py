@@ -5,12 +5,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
-from .models import Profile, Project, Whiteboard
+from .models import Profile, Project, Whiteboard, Task
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -56,26 +57,83 @@ def home(request):
                     team_members_dict[member] = []
                 team_members_dict[member].append(project.title)
 
-    logger.debug(f"Rendering home for {request.user.username}, login_type={request.session.get('login_type', 'employee')}")
+    # Get all tasks for the user and update statuses dynamically
+    user_tasks = Task.objects.filter(assigned_to=request.user)
+    today = date.today()
+    for task in user_tasks:
+        if task.status not in ['ON_HOLD', 'DONE']:  # Preserve admin/employee-set statuses
+            if task.end_date < today:
+                task.status = 'BACKLOG'
+            elif task.start_date <= today <= task.end_date:
+                task.status = 'DOING'
+            elif task.start_date > today:
+                task.status = 'UNFINISHED'
+            task.save()
+
+    # Task urgency categorization
+    urgent_tasks = user_tasks.filter(status__in=['DOING', 'BACKLOG'])  # Include all DOING and BACKLOG tasks
+    minor_tasks = user_tasks.filter(status='UNFINISHED', start_date__gt=today)  # Future tasks
+    pending_tasks = user_tasks.filter(status='ON_HOLD')  # On Hold tasks
+
+    logger.debug(f"User {request.user.username} tasks - Urgent: {list(urgent_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Minor: {list(minor_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Pending: {list(pending_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}")
+
+    login_type = request.session.get('login_type', 'employee')
+
+    logger.debug(f"Rendering home for {request.user.username}, login_type={login_type}")
     return render(request, 'app/home.html', {
         'user': request.user,
         'profile': profile,
-        'team_members_dict': team_members_dict
-    })
+        'team_members_dict': team_members_dict,
+        'urgent_tasks': urgent_tasks,
+        'minor_tasks': minor_tasks,
+        'pending_tasks': pending_tasks,
+        'login_type': login_type
+    })  
 
 # Admin Home page (protected) - Admin landing page
 @login_required
 def admin_home(request):
+    if request.session.get('login_type') != 'admin':
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('home')
+    
     profile = Profile.objects.filter(user=request.user).first()
     all_projects = Project.objects.all()
     all_users = User.objects.all()
+    tasks = Task.objects.all()  # Fetch all tasks for admin overview
+    today = date.today()
+    
+    # Update task statuses dynamically
+    for task in tasks:
+        if task.status not in ['ON_HOLD', 'DONE']:  # Preserve admin/employee-set statuses
+            if task.end_date < today:
+                task.status = 'BACKLOG'
+            elif task.start_date <= today <= task.end_date:
+                task.status = 'DOING'
+            elif task.start_date > today:
+                task.status = 'UNFINISHED'
+            task.save()
 
-    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={request.session.get('login_type', 'employee')}")
+    # Build team_members_dict with project as "team" and users assigned to its tasks
+    team_members_dict = {}
+    for task in tasks:
+        project = task.project
+        if project not in team_members_dict:
+            team_members_dict[project] = set()
+        for user in task.assigned_to.all():
+            team_members_dict[project].add(user)
+
+    login_type = request.session.get('login_type', 'employee')
+
+    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={login_type}, tasks={list(tasks.values('id', 'title', 'status'))}, team_members_dict={[(p.title, [u.username for u in users]) for p, users in team_members_dict.items()]}")
     return render(request, 'app/adminhome.html', {
         'user': request.user,
         'profile': profile,
         'all_projects': all_projects,
-        'all_users': all_users
+        'all_users': all_users,
+        'tasks': tasks,
+        'team_members_dict': team_members_dict,
+        'login_type': login_type
     })
 
 # Logout user
@@ -83,7 +141,7 @@ def logout_view(request):
     logger.debug(f"Logging out user {request.user.username}")
     logout(request)
     request.session.pop('login_type', None)
-    return redirect('index')
+    return redirect('login_view')
 
 # User registration (Manual)
 def manual_register(request):
@@ -152,6 +210,7 @@ def social_login_redirect(request):
 def profile_page(request):
     user = request.user
     profile, _ = Profile.objects.get_or_create(user=user)
+    login_type = request.session.get('login_type', 'employee')
 
     country_code, phone_number = "", ""
     if profile.phone:
@@ -178,6 +237,7 @@ def profile_page(request):
         'user': user,
         'default_country_code': country_code,
         'phone_number': phone_number,
+        'login_type': login_type
     })
 
 @login_required
@@ -185,11 +245,13 @@ def projects(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     user_projects = Project.objects.filter(team_members=request.user)
     users = User.objects.all()
+    login_type = request.session.get('login_type', 'employee')
     
     return render(request, 'app/projects.html', {
         'projects': user_projects, 
         'users': users,
-        'profile': profile
+        'profile': profile,
+        'login_type': login_type
     })
 
 @login_required
@@ -227,11 +289,137 @@ def delete_project(request, project_id):
 @login_required
 def tasks(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'app/tasks.html', {'profile': profile})
+    user_tasks = Task.objects.filter(assigned_to=request.user)
+    login_type = request.session.get('login_type', 'employee')
+    
+    # Redirect admins to admin_tasks
+    if login_type == 'admin':
+        return redirect('admin_tasks')
+
+    # Log the tasks for debugging
+    logger.debug(f"Tasks for user {request.user.username}: {list(user_tasks.values('id', 'title', 'status'))}")
+
+    # Update task statuses dynamically for employees
+    today = date.today()
+    for task in user_tasks:
+        if task.status not in ['ON_HOLD', 'DONE']:  # Admin-controlled or employee-set statuses
+            if task.end_date < today:
+                task.status = 'BACKLOG'
+            elif task.start_date <= today <= task.end_date:
+                task.status = 'DOING'
+            elif task.start_date > today:
+                task.status = 'UNFINISHED'
+            task.save()
+
+    return render(request, 'app/tasks.html', {
+        'profile': profile,
+        'tasks': user_tasks,
+        'login_type': login_type
+    })
+
+@login_required
+def mark_task_complete(request, task_id):
+    if request.method == "POST":
+        task = get_object_or_404(Task, id=task_id, assigned_to=request.user)
+        task.status = 'DONE'
+        task.save()
+        messages.success(request, "Task marked as complete!")
+    return redirect('tasks')
+
+@login_required
+def admin_tasks(request):
+    if request.session.get('login_type') != 'admin':
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('home')
+    
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    tasks = Task.objects.all()
+    all_projects = Project.objects.all()
+    all_users = User.objects.all()
+    login_type = request.session.get('login_type', 'employee')
+    
+    # Update task statuses dynamically, preserving ON_HOLD and DONE
+    today = date.today()
+    for task in tasks:
+        if task.status not in ['ON_HOLD', 'DONE']:  # Admin-controlled or employee-set
+            if task.end_date < today:
+                task.status = 'BACKLOG'
+            elif task.start_date <= today <= task.end_date:
+                task.status = 'DOING'
+            elif task.start_date > today:
+                task.status = 'UNFINISHED'
+            task.save()
+
+    return render(request, 'app/admintasks.html', {
+        'profile': profile,
+        'tasks': tasks,
+        'all_projects': all_projects,
+        'all_users': all_users,
+        'login_type': login_type
+    })
+
+@login_required
+def create_task(request):
+    if request.session.get('login_type') != 'admin':
+        return redirect('home')
+    
+    if request.method == "POST":
+        title = request.POST.get('title')
+        project_id = request.POST.get('project')
+        assigned_to_ids = request.POST.getlist('team_members')  # From JS hidden inputs
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        status = request.POST.get('status', 'UNFINISHED')
+
+        logger.debug(f"Creating task: title={title}, project_id={project_id}, assigned_to_ids={assigned_to_ids}, start_date={start_date}, end_date={end_date}, status={status}")
+
+        project = Project.objects.get(id=project_id)
+        task = Task.objects.create(
+            title=title,
+            project=project,
+            start_date=start_date,
+            end_date=end_date,
+            status=status if status in ['ON_HOLD', 'UNFINISHED'] else 'UNFINISHED'
+        )
+        if assigned_to_ids:
+            task.assigned_to.set(User.objects.filter(id__in=assigned_to_ids))
+            logger.debug(f"Task assigned to users: {task.assigned_to.all()}")
+        else:
+            logger.warning("No users assigned to the task!")
+        
+        messages.success(request, "Task created successfully.")
+        return redirect('admin_tasks')
+    
+    return redirect('admin_tasks')
+
+@login_required
+def update_task_status(request, task_id):
+    if request.session.get('login_type') != 'admin':
+        return redirect('home')
+    
+    task = get_object_or_404(Task, id=task_id)
+    if request.method == "POST":
+        status = request.POST.get('status')
+        if status in ['ON_HOLD', 'UNFINISHED']:  # Only admin can set these
+            task.status = status
+            task.save()
+            messages.success(request, "Task status updated.")
+    return redirect('admin_tasks')
+
+@login_required
+def delete_task(request, task_id):
+    if request.session.get('login_type') != 'admin':
+        return redirect('home')
+    
+    task = get_object_or_404(Task, id=task_id)
+    task.delete()
+    messages.success(request, "Task deleted successfully.")
+    return redirect('admin_tasks')
 
 @login_required
 def canvas(request):
-    return render(request, 'app/canvas.html')
+    login_type = request.session.get('login_type', 'employee')
+    return render(request, 'app/canvas.html', {'login_type': login_type})
 
 def get_users(request):
     users = User.objects.values("id", "username")
@@ -240,12 +428,16 @@ def get_users(request):
 @login_required
 def excalidraw_whiteboard(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    login_type = request.session.get('login_type', 'employee')
 
     if request.user not in project.team_members.all():
         messages.error(request, "You do not have permission to access this whiteboard.")
         return redirect('projects')
 
-    return render(request, 'app/excalidraw.html', {'project': project})
+    return render(request, 'app/excalidraw.html', {
+        'project': project,
+        'login_type': login_type
+    })
 
 @csrf_exempt
 def save_excalidraw_data(request, project_id):
@@ -276,8 +468,8 @@ def get_excalidraw_data(request, project_id):
 
 def report(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'app/report.html', {'profile': profile})
-
-def admin_tasks(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'app/admintasks.html', {'profile': profile})
+    login_type = request.session.get('login_type', 'employee')
+    return render(request, 'app/report.html', {
+        'profile': profile,
+        'login_type': login_type
+    })

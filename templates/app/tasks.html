@@ -1,75 +1,144 @@
-{%load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda Dashboard</title>
+  <title>Agenda Dashboard - Tasks</title>
   <link rel="stylesheet" href="{% static 'css/tasks.css' %}">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="menu">
       <br>
-      <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'tasks' %}">Tasks</a>
+      {% if login_type == 'admin' %}
+        <a href="{% url 'admin_home' %}">Home</a>
+      {% else %}
+        <a href="{% url 'home' %}">Home</a>
+      {% endif %}
+      {% if login_type == 'admin' %}
+        <a href="{% url 'admin_tasks' %}">Tasks</a>
+      {% else %}
+        <a href="{% url 'tasks' %}">Tasks</a>
+      {% endif %}
       <a href="{% url 'projects' %}">Projects</a>
-      <a href="#">Report</a>
+      <a href="{% url 'report' %}">Report</a>
       <a href="#">Notifications</a>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
+      <br><br><br><br><br><br><br><br><br><br><br><br>
       <div class="profile" id="profile">
         <a href="{% url 'profile_page' %}">
-        <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture"></a>
+          <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
+        </a>
       </div>
     </div>
-
-    <!-- Added logout button at the bottom -->
-    <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+    <form action="{% url 'logout' %}" method="post" class="sidebar-logout-form">
       {% csrf_token %}
       <button type="submit" class="logout-btn">Logout</button>
     </form>    
   </div>
+
   <!-- Main Content -->
   <div id="main">
-    <!-- Toggle Button -->
-    <span class="menu-btn" id="menuToggle">&#9776;</span>
+    <span class="menu-btn" id="menuToggle">☰</span>
 
     <!-- Task Fields (Horizontally Arranged) -->
     <div class="task-container">
       <div class="task-field">
         <h2>Backlog</h2>
-        <div class="task-content"></div>
+        <div class="task-content">
+          {% for task in tasks %}
+            {% if task.status == 'BACKLOG' %}
+              <div class="task-item">
+                {{ task.title }} ({{ task.project.title }})<br>
+                Due: {{ task.end_date|date:"Y-m-d" }}<br>
+                <form method="POST" action="{% url 'mark_task_complete' task.id %}">
+                  {% csrf_token %}
+                  <button type="submit">Mark as Complete</button>
+                </form>
+              </div>
+            {% endif %}
+          {% empty %}
+            <p>No tasks in Backlog</p>
+          {% endfor %}
+        </div>
       </div>
       <div class="separator"></div>
 
       <div class="task-field">
         <h2>Doing</h2>
-        <div class="task-content"></div>
+        <div class="task-content">
+          {% for task in tasks %}
+            {% if task.status == 'DOING' %}
+              <div class="task-item">
+                {{ task.title }} ({{ task.project.title }})<br>
+                Due: {{ task.end_date|date:"Y-m-d" }}<br>
+                <form method="POST" action="{% url 'mark_task_complete' task.id %}">
+                  {% csrf_token %}
+                  <button type="submit">Mark as Complete</button>
+                </form>
+              </div>
+            {% endif %}
+          {% empty %}
+            <p>No tasks in Doing</p>
+          {% endfor %}
+        </div>
       </div>
       <div class="separator"></div>
 
       <div class="task-field">
         <h2>On Hold</h2>
-        <div class="task-content"></div>
+        <div class="task-content">
+          {% for task in tasks %}
+            {% if task.status == 'ON_HOLD' %}
+              <div class="task-item">
+                {{ task.title }} ({{ task.project.title }})<br>
+                Due: {{ task.end_date|date:"Y-m-d" }}
+              </div>
+            {% endif %}
+          {% empty %}
+            <p>No tasks in On Hold</p>
+          {% endfor %}
+        </div>
       </div>
       <div class="separator"></div>
 
       <div class="task-field">
         <h2>Done</h2>
-        <div class="task-content"></div>
+        <div class="task-content">
+          {% for task in tasks %}
+            {% if task.status == 'DONE' %}
+              <div class="task-item">
+                {{ task.title }} ({{ task.project.title }})<br>
+                Due: {{ task.end_date|date:"Y-m-d" }}
+              </div>
+            {% endif %}
+          {% empty %}
+            <p>No tasks in Done</p>
+          {% endfor %}
+        </div>
       </div>
       <div class="separator"></div>
 
       <div class="task-field">
         <h2>Unfinished</h2>
-        <div class="task-content"></div>
+        <div class="task-content">
+          {% for task in tasks %}
+            {% if task.status == 'UNFINISHED' %}
+              <div class="task-item">
+                {{ task.title }} ({{ task.project.title }})<br>
+                Due: {{ task.end_date|date:"Y-m-d" }}<br>
+                <form method="POST" action="{% url 'mark_task_complete' task.id %}">
+                  {% csrf_token %}
+                  <button type="submit">Mark as Complete</button>
+                </form>
+              </div>
+            {% endif %}
+          {% empty %}
+            <p>No tasks in Unfinished</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>

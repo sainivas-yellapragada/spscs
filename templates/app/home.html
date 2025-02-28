@@ -1,43 +1,38 @@
-{% load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agenda Dashboard</title>
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">  
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
   <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="menu">
-      <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'tasks' %}">Tasks</a>
+      {% if login_type == 'admin' %}
+        <a href="{% url 'admin_home' %}">Home</a>
+      {% else %}
+        <a href="{% url 'home' %}">Home</a>
+      {% endif %}
+      {% if login_type == 'admin' %}
+        <a href="{% url 'admin_tasks' %}">Tasks</a>
+      {% else %}
+        <a href="{% url 'tasks' %}">Tasks</a>
+      {% endif %}
       <a href="{% url 'projects' %}">Projects</a>
       <a href="{% url 'report' %}">Report</a>
       <a href="#">Notifications</a>
-      <br><br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
+      <br><br><br><br><br><br><br><br><br><br><br><br>
       <div class="profile" id="profile">
         <a href="{% url 'profile_page' %}">
           <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
         </a>
       </div>
     </div>
-    <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+    <form action="{% url 'logout' %}" method="post" class="sidebar-logout-form">
       {% csrf_token %}
       <button type="submit" class="logout-btn">Logout</button>
     </form>
@@ -45,7 +40,7 @@
 
   <!-- Main Content -->
   <div id="main">
-    <span class="menu-btn" id="menuToggle">&#9776;</span>
+    <span class="menu-btn" id="menuToggle">☰</span>
 
     <div class="container">
       <header>
@@ -74,15 +69,42 @@
             <div class="task-columns">
               <div class="task-column">
                 <h3>Urgent</h3>
-                <div class="task-content"></div>
+                <div class="task-content">
+                  {% for task in urgent_tasks %}
+                    <div class="task-item">
+                      {{ task.title }} ({{ task.project.title }})<br>
+                      Due: {{ task.end_date|date:"Y-m-d" }}
+                    </div>
+                  {% empty %}
+                    <p>No urgent tasks</p>
+                  {% endfor %}
+                </div>
               </div>
               <div class="task-column">
                 <h3>Minor</h3>
-                <div class="task-content"></div>
+                <div class="task-content">
+                  {% for task in minor_tasks %}
+                    <div class="task-item">
+                      {{ task.title }} ({{ task.project.title }})<br>
+                      Due: {{ task.end_date|date:"Y-m-d" }}
+                    </div>
+                  {% empty %}
+                    <p>No minor tasks</p>
+                  {% endfor %}
+                </div>
               </div>
               <div class="task-column">
                 <h3>Pending</h3>
-                <div class="task-content"></div>
+                <div class="task-content">
+                  {% for task in pending_tasks %}
+                    <div class="task-item">
+                      {{ task.title }} ({{ task.project.title }})<br>
+                      Due: {{ task.end_date|date:"Y-m-d" }}
+                    </div>
+                  {% empty %}
+                    <p>No pending tasks</p>
+                  {% endfor %}
+                </div>
               </div>
             </div>
           </div>
@@ -114,7 +136,7 @@
 
           <div class="total-projects">
             <div class="section-heading"><b>Total Projects</b></div>
-            <div class="content"></div>
+            <div class="content">{{ team_members_dict|length }}</div>
           </div>
         </div>
       </main>

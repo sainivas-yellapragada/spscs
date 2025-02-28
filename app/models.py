@@ -21,7 +21,6 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
-
 class Project(models.Model):
     STATUS_CHOICES = [
         ('Planning', 'Planning'),
@@ -32,8 +31,8 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     team_members = models.ManyToManyField(User)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Planning')
-    excalidraw_link = models.URLField(blank=True, null=True)  
-    room_id = models.CharField(max_length=255, unique=True, blank=True, null=True)  
+    excalidraw_link = models.URLField(blank=True, null=True)
+    room_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -47,6 +46,24 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
+class Task(models.Model):
+    STATUS_CHOICES = (
+        ('BACKLOG', 'Backlog'),
+        ('DOING', 'Doing'),
+        ('ON_HOLD', 'On Hold'),
+        ('DONE', 'Done'),
+        ('UNFINISHED', 'Unfinished'),
+    )
+    title = models.CharField(max_length=255)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    assigned_to = models.ManyToManyField(User, related_name='tasks')
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='BACKLOG')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
 
 class Whiteboard(models.Model):
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="whiteboard")

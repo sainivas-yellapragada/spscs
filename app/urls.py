@@ -22,4 +22,8 @@ urlpatterns = [
     path('projects/<int:project_id>/save_excalidraw_data/', views.save_excalidraw_data, name="save_excalidraw_data"),
     path('projects/<int:project_id>/get_excalidraw_data/', views.get_excalidraw_data, name="get_excalidraw_data"),
     path('social-login-redirect/', views.social_login_redirect, name='social_login_redirect'),
+    path('tasks/create/', views.create_task, name='create_task'),
+    path('tasks/<int:task_id>/update/', views.update_task_status, name='update_task_status'),
+    path('tasks/<int:task_id>/delete/', views.delete_task, name='delete_task'),
+    path('tasks/<int:task_id>/complete/', views.mark_task_complete, name='mark_task_complete'),
 ]
