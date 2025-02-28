@@ -175,7 +175,7 @@ body {
   
   .team, .project-updates, .total-projects {
     flex: 1;
-    padding: 20px;
+    padding: 80px;
     background: white;
     border-radius: 8px;
     text-align: center;
@@ -196,12 +196,13 @@ body {
     font-size: 1.2rem;
     font-weight: bold;
     text-align: center;
+    width: 500px;
   }
   
   .team table td {
     background-color: #f5f5f5;
     color: #333;
-    padding: 10px;
+    padding: 20px;
     border-radius: 5px;
     transition: background-color 0.3s ease;
   }
@@ -265,5 +266,21 @@ body {
     align-items: center; /* Center-align the content */
     justify-content: flex-start;
   }
-  
-  
+/* Ensure "Team Details" and "Ongoing Projects" are at the top center */
+.team .section-heading, 
+.project-updates .section-heading {
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 20px; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+}
+
+/* Make sure the team and project containers have relative positioning */
+.team, .project-updates {
+    position: relative;
+    padding-top: 50px; /* Add space for the heading */
+}
+

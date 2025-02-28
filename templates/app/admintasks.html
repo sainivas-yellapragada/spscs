@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+    <link rel="stylesheet" href="tasks.css">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'tasks' %}">Tasks</a>
+            <a href="{% url 'projects' %}">Projects</a>
+            <a href="{% url 'report' %}">Report</a>
+            <a href="#">Notifications</a>
+            <div class="profile" id="profile">
+                <a href="{% url 'profile_page' %}"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
+            </div>
+        </div>
+        <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+          {% csrf_token %}
+          <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main">
+        <span class="menu-btn" id="menuToggle">&#9776;</span>
+
+        <div class="container">
+            <h1 class="page-title">Tasks</h1>
+
+            <button id="addProjectBtn" class="add-project-btn">+ Add Task</button>
+
+            <div id="newProjectForm" style="display:none;">
+                <h2>Create New Tasks</h2>
+                <form method="POST" action="{% url 'create_project' %}">
+                    {% csrf_token %}
+                    
+                    <label for="title">Task Name:</label>
+                    <input type="text" id="title" name="title" required>
+
+                    <label for="team_members">Assign Member:</label>
+                    <input type="text" id="team_members_search" placeholder="Search team members...">
+                    <div id="team_members_suggestions" class="suggestions-box"></div>
+                    <div id="selected_team_members"></div>
+
+                    <label for="status">Start Date:</label>
+                    <input type="text" id="title" name="title" required>
+
+                    <label for="status">End Date:</label>
+                    <input type="text" id="title" name="title" required>
+
+                    <button type="submit">Assign Task</button>
+                </form>
+            </div>
+
+            <!-- Projects Table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th>Task Name</th>
+                        <th>Assigned Member</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody id="projectTable">
+                    {% for project in projects %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            
+                            </a>
+                        </td>
+                        
+                        <td>
+                            {% for member in project.team_members.all %}
+                                {{ member.username }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'update_project_status' project.id %}">
+                                {% csrf_token %}
+                                <select name="status" onchange="this.form.submit()">
+                                    <option value="Planning" {% if project.status == 'Planning' %}selected{% endif %}>Planning</option>
+                                    <option value="Design" {% if project.status == 'Design' %}selected{% endif %}>Design</option>
+                                    <option value="Building" {% if project.status == 'Building' %}selected{% endif %}>Building</option>
+                                    <option value="Testing" {% if project.status == 'Testing' %}selected{% endif %}>Testing</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_project' project.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="tasks.js"></script>
+</body>
+</html>

@@ -277,3 +277,7 @@ def get_excalidraw_data(request, project_id):
 def report(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     return render(request, 'app/report.html', {'profile': profile})
+
+def admin_tasks(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    return render(request, 'app/admintasks.html', {'profile': profile})
