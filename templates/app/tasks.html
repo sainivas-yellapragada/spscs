@@ -50,7 +50,7 @@
         <div class="task-content">
           {% for task in tasks %}
             {% if task.status == 'BACKLOG' %}
-              <div class="task-item">
+              <div class="task-item task-rectangle" data-status="BACKLOG">
                 {{ task.title }} ({{ task.project.title }})<br>
                 Due: {{ task.end_date|date:"Y-m-d" }}<br>
                 <form method="POST" action="{% url 'mark_task_complete' task.id %}">
@@ -71,7 +71,7 @@
         <div class="task-content">
           {% for task in tasks %}
             {% if task.status == 'DOING' %}
-              <div class="task-item">
+              <div class="task-item task-rectangle" data-status="DOING">
                 {{ task.title }} ({{ task.project.title }})<br>
                 Due: {{ task.end_date|date:"Y-m-d" }}<br>
                 <form method="POST" action="{% url 'mark_task_complete' task.id %}">
@@ -92,7 +92,7 @@
         <div class="task-content">
           {% for task in tasks %}
             {% if task.status == 'ON_HOLD' %}
-              <div class="task-item">
+              <div class="task-item task-rectangle" data-status="ON_HOLD">
                 {{ task.title }} ({{ task.project.title }})<br>
                 Due: {{ task.end_date|date:"Y-m-d" }}
               </div>
@@ -109,7 +109,7 @@
         <div class="task-content">
           {% for task in tasks %}
             {% if task.status == 'DONE' %}
-              <div class="task-item">
+              <div class="task-item task-rectangle" data-status="DONE">
                 {{ task.title }} ({{ task.project.title }})<br>
                 Due: {{ task.end_date|date:"Y-m-d" }}
               </div>
@@ -126,7 +126,7 @@
         <div class="task-content">
           {% for task in tasks %}
             {% if task.status == 'UNFINISHED' %}
-              <div class="task-item">
+              <div class="task-item task-rectangle" data-status="UNFINISHED">
                 {{ task.title }} ({{ task.project.title }})<br>
                 Due: {{ task.end_date|date:"Y-m-d" }}<br>
                 <form method="POST" action="{% url 'mark_task_complete' task.id %}">

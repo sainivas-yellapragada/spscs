@@ -62,7 +62,7 @@
                 <h3>Task</h3>
                 <div class="task-content">
                   {% for task in tasks %}
-                    <div class="task-item">{{ task.title }}</div>
+                    <div class="task-item task-rectangle" data-status="{{ task.status }}">{{ task.title }}</div>
                   {% empty %}
                     <p>No tasks assigned</p>
                   {% endfor %}
@@ -72,7 +72,7 @@
                 <h3>User</h3>
                 <div class="task-content">
                   {% for task in tasks %}
-                    <div class="task-item">
+                    <div class="task-item user-rectangle">
                       {% for user in task.assigned_to.all %}
                         {{ user.username }}{% if not forloop.last %}, {% endif %}
                       {% endfor %}

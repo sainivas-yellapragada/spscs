@@ -71,7 +71,7 @@
                 <h3>Urgent</h3>
                 <div class="task-content">
                   {% for task in urgent_tasks %}
-                    <div class="task-item">
+                    <div class="task-item task-rectangle" data-status="{{ task.status }}">
                       {{ task.title }} ({{ task.project.title }})<br>
                       Due: {{ task.end_date|date:"Y-m-d" }}
                     </div>
@@ -84,7 +84,7 @@
                 <h3>Minor</h3>
                 <div class="task-content">
                   {% for task in minor_tasks %}
-                    <div class="task-item">
+                    <div class="task-item task-rectangle" data-status="{{ task.status }}">
                       {{ task.title }} ({{ task.project.title }})<br>
                       Due: {{ task.end_date|date:"Y-m-d" }}
                     </div>
@@ -97,7 +97,7 @@
                 <h3>Pending</h3>
                 <div class="task-content">
                   {% for task in pending_tasks %}
-                    <div class="task-item">
+                    <div class="task-item task-rectangle" data-status="{{ task.status }}">
                       {{ task.title }} ({{ task.project.title }})<br>
                       Due: {{ task.end_date|date:"Y-m-d" }}
                     </div>

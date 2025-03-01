@@ -1,14 +1,16 @@
 /* General Styles */
 body {
-  /*font-family: Arial, sans-serif;*/
   background: #f5f5f5;
   margin: 0;
   padding: 0;
 }
+
 #main {
   transition: margin-left 0.5s;
   padding: 20px;
-  margin-left:0;
+  margin-left: 0;
+  min-height: 100vh; /* Allow page to grow */
+  overflow-y: auto; /* Enable full-page scrolling */
 }
 
 .container {
@@ -233,10 +235,12 @@ header p {
 .total-projects .project-item {
   font-size: 1.1rem;
 }
+
+/* Task Columns and Rectangles */
 .task-columns {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch; /* Changed to stretch for consistent height */
   gap: 20px;
 }
 
@@ -257,4 +261,59 @@ header p {
   height: 80%;
   width: 2px;
   background-color: #ccc;
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 300px; /* Set a max height for scrolling */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 5px; /* Space for scrollbar */
+}
+
+/* Task Rectangles */
+.task-rectangle {
+  padding: 10px 15px;
+  margin: 5px 0;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+  text-align: center;
+}
+
+/* Task status colors */
+.task-rectangle[data-status="DOING"] {
+  background-color: #28a745; /* Green for ongoing */
+}
+
+.task-rectangle[data-status="BACKLOG"] {
+  background-color: #dc3545; /* Red for backlog */
+}
+
+.task-rectangle[data-status="ON_HOLD"] {
+  background-color: #fd7e14; /* Orange for on hold */
+}
+
+.task-rectangle[data-status="DONE"] {
+  background-color: #007bff; /* Blue for done */
+}
+
+.task-rectangle[data-status="UNFINISHED"] {
+  background-color: #6c757d; /* Gray for unfinished */
+}
+
+/* Team Section with Scroll */
+.team {
+  max-height: 400px; /* Set a max height for scrolling */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 5px; /* Space for scrollbar */
+}
+
+.team table {
+  width: 100%;
 }

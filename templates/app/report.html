@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda Dashboard</title>
+    <title>Agenda Dashboard - Report</title>
     <link rel="stylesheet" href="{% static 'css/report.css' %}"> 
 </head>
 <body>
@@ -23,10 +23,11 @@
             <br><br>
             <br><br>
             <br><br>
+            <br><br>
             <div class="profile" id="profile">
                 <a href="{% url 'profile_page' %}"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
             </div>
-            <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+            <form action="{% url 'logout' %}" method="post" class="sidebar-logout-form">
                 {% csrf_token %}
                 <button type="submit" class="logout-btn">Logout</button>
             </form>
@@ -43,8 +44,8 @@
                     <h3>Total Projects</h3>
                     <div class="circle">
                         <svg width="140" height="140">
-                            <circle cx="70" cy="70" r="60" stroke="#f5c6d6" stroke-width="15" fill="none"/>
-                            <circle cx="70" cy="70" r="60" stroke="blue" stroke-width="15" fill="none" 
+                            <circle cx="70" cy="70" r="60" stroke="#d3d3d3" stroke-width="15" fill="none"/>
+                            <circle cx="70" cy="70" r="60" stroke="#007bff" stroke-width="15" fill="none" 
                                 stroke-dasharray="377" stroke-dashoffset="{{ projects_offset }}"/>
                         </svg>
                         <p>{{ total_projects }}</p>
@@ -55,11 +56,11 @@
                     <h3>Closed Tasks</h3>
                     <div class="circle">
                         <svg width="140" height="140">
-                            <circle cx="70" cy="70" r="60" stroke="#f5c6d6" stroke-width="15" fill="none"/>
-                            <circle cx="70" cy="70" r="60" stroke="blue" stroke-width="15" fill="none" 
+                            <circle cx="70" cy="70" r="60" stroke="#d3d3d3" stroke-width="15" fill="none"/>
+                            <circle cx="70" cy="70" r="60" stroke="#007bff" stroke-width="15" fill="none" 
                                 stroke-dasharray="377" stroke-dashoffset="{{ tasks_offset }}"/>
                         </svg>
-                        <p>{{ total_tasks }}</p> <!-- This can be updated to closed_tasks later -->
+                        <p>{{ closed_tasks }}</p>
                     </div>
                 </div>
             </div>
@@ -67,36 +68,41 @@
             <div class="report-section">
                 <h2>Would you like to download the report now?</h2>
                 <p>Click the button below to get your copy instantly.</p>
-                <button class="download-btn">Download PDF</button>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="download_pdf" class="download-btn">Download PDF</button>
+                </form>
             </div>
         </div>
 
-        <table class="project-summary">
-            <thead>
-                <tr>
-                    <th>Project Name</th>
-                    <th>Project Manager</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    <th>Progress</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for project in projects %}
-                <tr>
-                    <td>{{ project.name }}</td>
-                    <td>{{ project.manager }}</td>
-                    <td>{{ project.due_date }}</td>
-                    <td>{{ project.status }}</td>
-                    <td>{{ project.progress }}%</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">No projects available.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table class="project-summary">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Project Manager</th>
+                        <th>Last Updated</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>{{ project.name }}</td>
+                        <td>{{ project.manager }}</td>
+                        <td>{{ project.due_date }}</td>
+                        <td>{{ project.status }}</td>
+                        <td>{{ project.progress }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No projects available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="{% static 'js/report.js' %}"></script>

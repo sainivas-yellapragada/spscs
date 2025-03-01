@@ -6,12 +6,14 @@ from django.contrib.auth.decorators import login_required
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
 from .models import Profile, Project, Whiteboard, Task
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
 from datetime import date
+from xhtml2pdf import pisa
+from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -466,10 +468,78 @@ def get_excalidraw_data(request, project_id):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
+@login_required
 def report(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     login_type = request.session.get('login_type', 'employee')
+
+    # Total Projects and Projects in Testing (final stage)
+    user_projects = Project.objects.filter(team_members=request.user)
+    total_projects = user_projects.count()
+    completed_projects = user_projects.filter(status='Testing').count()  # Final stage is Testing
+    
+    # Closed Tasks
+    user_tasks = Task.objects.filter(assigned_to=request.user)
+    total_tasks = user_tasks.count()
+    closed_tasks = user_tasks.filter(status='DONE').count()
+
+    # Calculate offsets for donut charts (circumference = 2πr = 377 for r=60)
+    # Projects: Percentage of total projects out of a fixed maximum of 100
+    projects_progress = (total_projects / 100) * 100  # Scale to 100 as max
+    projects_offset = 377 - (377 * (projects_progress / 100))
+
+    # Tasks: Percentage of closed tasks out of a fixed maximum of 100
+    tasks_progress = (closed_tasks / 100) * 100  # Scale to 100 as max
+    tasks_offset = 377 - (377 * (tasks_progress / 100))
+
+    #logger.debug(f"Report data - total_projects: {total_projects}, completed_projects: {completed_projects}, total_tasks: {total_tasks}, closed_tasks: {closed_tasks}, projects_offset: {projects_offset}, tasks_offset: {tasks_offset}")
+
+    # Project summary data
+    project_summaries = []
+    progress_map = {
+        'Planning': 25,
+        'In Progress': 75,
+        'Testing': 100  # Final stage is Testing
+    }
+    for project in user_projects:
+        progress = progress_map.get(project.status, 0)  # Default to 0 if status not in map
+        manager = request.user if login_type == 'admin' else None  # Admin is the manager
+        project_summaries.append({
+            'name': project.title,
+            'manager': f"{manager.first_name} {manager.last_name}" if manager else "N/A",
+            'due_date': project.updated_at.strftime('%Y-%m-%d'),  # Using updated_at as due_date isn't present
+            'status': project.status,
+            'progress': progress
+        })
+
+    if request.method == "POST" and 'download_pdf' in request.POST:
+        # Generate PDF
+        pdf_template = 'app/report_pdf.html'
+        context = {
+            'user': request.user,
+            'total_projects': total_projects,
+            'completed_projects': completed_projects,
+            'closed_tasks': closed_tasks,
+            'total_tasks': total_tasks,
+            'projects': project_summaries,
+            'login_type': login_type,
+        }
+        html = render_to_string(pdf_template, context)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('PDF generation failed', status=500)
+        return response
+
     return render(request, 'app/report.html', {
         'profile': profile,
-        'login_type': login_type
+        'login_type': login_type,
+        'total_projects': total_projects,
+        'completed_projects': completed_projects,
+        'closed_tasks': closed_tasks,
+        'total_tasks': total_tasks,
+        'projects_offset': projects_offset,
+        'tasks_offset': tasks_offset,
+        'projects': project_summaries,  # For the table
     })

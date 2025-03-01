@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .summary {
+            margin-bottom: 20px;
+        }
+        .summary p {
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #ee420d;
+            color: white;
+        }
+        td {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Report for {{ user.first_name|default:user.username }}</h1>
+    <div class="summary">
+        <p><strong>Total Projects:</strong> {{ total_projects }} (Completed: {{ completed_projects }})</p>
+        <p><strong>Closed Tasks:</strong> {{ closed_tasks }} / {{ total_tasks }}</p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Project Name</th>
+                <th>Project Manager</th>
+                <th>Last Updated</th>
+                <th>Status</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td>{{ project.manager }}</td>
+                <td>{{ project.due_date }}</td>
+                <td>{{ project.status }}</td>
+                <td>{{ project.progress }}%</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No projects available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

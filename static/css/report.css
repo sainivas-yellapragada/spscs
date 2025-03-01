@@ -1,7 +1,6 @@
 /* General Styles */
 body {
     margin: 0;
-    /*font-family: Arial, sans-serif;*/
     transition: margin-left 0.5s ease;
 }
 
@@ -10,6 +9,7 @@ body {
     height: 100%;
     width: 0;
     position: fixed;
+    z-index: 1;
     top: 0;
     left: 0;
     background-color: #111;
@@ -19,7 +19,7 @@ body {
 }
 
 .sidebar a {
-    padding: 8px 16px;
+    padding: 8px 8px 8px 32px;
     text-decoration: none;
     font-size: 25px;
     color: white;
@@ -28,19 +28,25 @@ body {
 }
 
 .sidebar a:hover {
-    background-color: #575757;
+    color: rgb(255, 200, 2);
 }
 
 .profile {
+    position: absolute;
+    bottom: 175px;
+    left: 45%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    align-items: center;
 }
 
 .profile img {
     width: 70px !important;
     height: 70px !important;
     border-radius: 50%;
+    object-fit: cover;
+    display: block;
 }
 
 /* Menu Button */
@@ -50,7 +56,10 @@ body {
     position: absolute;
     top: 20px;
     left: 20px;
+    z-index: 1100;
     color: rgb(255, 238, 0);
+    background: none;
+    border: none;
 }
 
 /* Main Content */
@@ -58,12 +67,15 @@ body {
     margin-left: 10%;
     padding: 20px;
     transition: margin-left 0.5s ease;
+    min-height: 100vh; /* Allow page to grow */
+    overflow-y: auto; /* Enable full-page scrolling */
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 /* Circle Section */
@@ -88,26 +100,29 @@ body {
 /* Circle Styling */
 .circle {
     position: relative;
-    text-align: center;
-    width: 140px; /* Increased size */
+    width: 140px;
     height: 140px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 svg {
     display: block;
     margin: 0 auto;
-    width: 140px;  /* Increased size */
+    width: 140px;
     height: 140px;
 }
 
 .circle p {
     position: absolute;
-    top: 38%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 22px; /* Bigger font */
+    font-size: 22px;
     font-weight: bold;
     color: black;
+    margin: 0; /* Remove default margins */
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Perfect centering */
 }
 
 /* Report Section */
@@ -117,13 +132,26 @@ svg {
 }
 
 .download-btn {
-    background-color: lightgray;
+    background-color: #007bff;
+    color: white;
     border: none;
-    padding: 8px 15px;
+    padding: 10px 20px;
     cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.download-btn:hover {
+    background-color: #0056b3;
 }
 
 /* Table Styles */
+.table-container {
+    max-height: 400px; /* Set a max height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding-right: 5px; /* Space for scrollbar */
+}
+
 .project-summary {
     width: 100%;
     border-collapse: collapse;
@@ -135,6 +163,16 @@ svg {
     padding: 10px;
     text-align: center;
 }
+
+.project-summary th {
+    background-color: #ee420d;
+    color: white;
+}
+
+.project-summary td {
+    background-color: #f5f5f5;
+}
+
 /* Logout Button */
 .sidebar .logout-btn {
     position: absolute;
@@ -148,9 +186,8 @@ svg {
     cursor: pointer;
     border-radius: 4px;
     font-size: 16px;
-  }
-  
-  .sidebar .logout-btn:hover {
+}
+
+.sidebar .logout-btn:hover {
     background-color: #e5b100;
-  }
-  
+}
