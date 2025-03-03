@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects</title>
-    <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_projects.css' %}">
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
@@ -13,11 +13,11 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="menu">
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'tasks' %}">Tasks</a>
-            <a href="{% url 'projects' %}">Projects</a>
+            <a href="{% url 'adminhome' %}">Home</a>
+            <a href="{% url 'admintasks' %}">Tasks</a>
+            <a href="{% url 'admin_projects' %}">Projects</a>
             <a href="{% url 'report' %}">Report</a>
-            <a href="{% url 'notifications' %}">Notifications</a>
+            <a href="{% url 'admin_notifications' %}">Notifications</a>
             <div class="profile" id="profile">
                 <a href="{% url 'profile_page' %}"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
             </div>
@@ -112,6 +112,6 @@
         </div>
     </div>
 
-    <script src="{% static 'js/projects.js' %}"></script>
+    <script src="{% static 'js/admin_projects.js' %}"></script>
 </body>
 </html>

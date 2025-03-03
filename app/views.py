@@ -543,3 +543,9 @@ def report(request):
         'tasks_offset': tasks_offset,
         'projects': project_summaries,  # For the table
     })
+@login_required
+def notifications(request):
+        return render(request,'app/notifications.html')
+@login_required 
+def admin_notifications(request):
+        return render(request,'app/admin_notifications.html')

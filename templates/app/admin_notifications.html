@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications Page</title>
+    <link rel="stylesheet" href="{% static 'css/admin_notifications.css' %}">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu">
+            <a href="{% url 'admin_home' %}">Home</a>
+            <a href="{% url 'admin_tasks' %}">Tasks</a>
+            <a href="{% url 'projects' %}">Projects</a>
+            <a href="{% url 'report' %}">Report</a>
+            <a href="{% url 'admin_notifications' %}">Notifications</a>
+            <br><br><br><br><br><br><br><br><br><br><br><br>
+            <div class="profile" id="profile">
+                <a href="{% url 'profile_page' %}">
+                    <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
+                </a>
+            </div>
+        </div>
+        <form action="{% url 'logout' %}" method="post" class="sidebar-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main">
+        <span class="menu-btn" id="menuToggle">☰</span>
+        <button class="schedule-btn"> + Schedule a Meeting</button>
+
+        <div class="notification-container">
+            <h2>Notifications</h2>
+            <div class="notification">
+                <span class="bell-icon">🔔</span>
+                <span class="message">You have a new follower!</span>
+            </div>
+            <div class="notification">
+                <span class="bell-icon">🔔</span>
+                <span class="message">Your post was liked by 5 people.</span>
+            </div>
+            <div class="notification">
+                <span class="bell-icon">🔔</span>
+                <span class="message">Someone commented on your photo.</span>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/admin_notifications.js' %}"></script>
+</body>
+</html>
