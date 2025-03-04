@@ -77,7 +77,16 @@ def home(request):
     minor_tasks = user_tasks.filter(status='UNFINISHED', start_date__gt=today)  # Future tasks
     pending_tasks = user_tasks.filter(status='ON_HOLD')  # On Hold tasks
 
+    # Project stage counts for the donut chart
+    project_stages = {
+        "Planning": projects.filter(status="Planning").count(),
+        "Design": projects.filter(status="Design").count(),
+        "Building": projects.filter(status="Building").count(),
+        "Testing": projects.filter(status="Testing").count(),  # Testing means complete
+    }
+
     logger.debug(f"User {request.user.username} tasks - Urgent: {list(urgent_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Minor: {list(minor_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Pending: {list(pending_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}")
+    logger.debug(f"Project stages for {request.user.username}: {project_stages}")
 
     login_type = request.session.get('login_type', 'employee')
 
@@ -89,9 +98,9 @@ def home(request):
         'urgent_tasks': urgent_tasks,
         'minor_tasks': minor_tasks,
         'pending_tasks': pending_tasks,
-        'login_type': login_type
-    })  
-
+        'login_type': login_type,
+        'project_stages': project_stages,  # Pass project stages to the template
+    })
 # Admin Home page (protected) - Admin landing page
 @login_required
 def admin_home(request):
@@ -492,8 +501,6 @@ def report(request):
     tasks_progress = (closed_tasks / 100) * 100  # Scale to 100 as max
     tasks_offset = 377 - (377 * (tasks_progress / 100))
 
-    #logger.debug(f"Report data - total_projects: {total_projects}, completed_projects: {completed_projects}, total_tasks: {total_tasks}, closed_tasks: {closed_tasks}, projects_offset: {projects_offset}, tasks_offset: {tasks_offset}")
-
     # Project summary data
     project_summaries = []
     progress_map = {
@@ -543,9 +550,11 @@ def report(request):
         'tasks_offset': tasks_offset,
         'projects': project_summaries,  # For the table
     })
+
 @login_required
 def notifications(request):
-        return render(request,'app/notifications.html')
+    return render(request, 'app/notifications.html')
+
 @login_required 
 def admin_notifications(request):
-        return render(request,'app/admin_notifications.html')
+    return render(request, 'app/admin_notifications.html')
