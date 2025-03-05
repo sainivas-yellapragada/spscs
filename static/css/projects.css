@@ -87,19 +87,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* Add Project Button */
-.add-project-btn {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-    position: absolute;
-    top: 52px;
-    right: 168px;
-    padding: 10px;
-}
+
 
 .add-project-btn:hover {
     background-color: #218838;
