@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications Page</title>
+    <title>Admin Notifications Page</title>
     <link rel="stylesheet" href="{% static 'css/admin_notifications.css' %}">
 </head>
 <body>
@@ -32,22 +32,66 @@
     <!-- Main Content -->
     <div id="main">
         <span class="menu-btn" id="menuToggle">☰</span>
-        <button class="schedule-btn"> + Schedule a Meeting</button>
+        <button class="schedule-btn" id="scheduleMeetingBtn"> + Schedule a Meeting</button>
 
-        <div class="notification-container">
-            <h2>Notifications</h2>
-            <div class="notification">
-                <span class="bell-icon">🔔</span>
-                <span class="message">You have a new follower!</span>
+        <!-- Notifications Wrapper for Tasks and Projects -->
+        <div class="notifications-wrapper">
+            <!-- Task Notifications (Left) -->
+            <div class="notification-container task-notifications">
+                <h2>Task Notifications</h2>
+                {% if task_notifications %}
+                    {% for notification in task_notifications %}
+                        <div class="notification">
+                            <span class="bell-icon">🔔</span>
+                            <span class="message">{{ notification.message }} ({{ notification.date }})</span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="notification">
+                        <span class="bell-icon">🔔</span>
+                        <span class="message">No new task notifications.</span>
+                    </div>
+                {% endif %}
             </div>
-            <div class="notification">
-                <span class="bell-icon">🔔</span>
-                <span class="message">Your post was liked by 5 people.</span>
+
+            <!-- Project Notifications (Right) -->
+            <div class="notification-container project-notifications">
+                <h2>Project Notifications</h2>
+                {% if project_notifications %}
+                    {% for notification in project_notifications %}
+                        <div class="notification">
+                            <span class="bell-icon">🔔</span>
+                            <span class="message">{{ notification.message|safe }} ({{ notification.date }})</span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="notification">
+                        <span class="bell-icon">🔔</span>
+                        <span class="message">No new project notifications.</span>
+                    </div>
+                {% endif %}
             </div>
-            <div class="notification">
-                <span class="bell-icon">🔔</span>
-                <span class="message">Someone commented on your photo.</span>
-            </div>
+        </div>
+
+        <!-- Popup Form -->
+        <div class="overlay" id="popupOverlay"></div>
+        <div class="popup" id="schedulePopup">
+            <h3>Schedule a Meeting</h3>
+            <form id="scheduleForm" method="post" action="{% url 'schedule_meeting' %}">
+                {% csrf_token %}
+                <label for="meeting-datetime">Date and Time:</label>
+                <input type="datetime-local" id="meeting-datetime" name="meeting_datetime" required>
+                
+                <label for="agenda">Agenda:</label>
+                <textarea id="agenda" name="agenda" rows="4" required placeholder="Enter meeting agenda"></textarea>
+                
+                <label for="user-search">Notify Users (comma-separated, leave empty for all):</label>
+                <input type="text" id="user-search" name="users" placeholder="Type usernames (e.g., john doe, jane)">
+                <div id="suggestions" class="suggestions"></div>
+                
+                <button type="submit">Submit</button>
+                <button type="button" class="close-btn" id="closePopup">Close</button>
+            </form>
         </div>
     </div>
     <script src="{% static 'js/admin_notifications.js' %}"></script>

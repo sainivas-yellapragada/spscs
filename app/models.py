@@ -38,7 +38,7 @@ class Project(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.room_id:
-            self.room_id = str(uuid.uuid4())  # Ensure unique room ID
+            self.room_id = str(uuid.uuid4())
         if not self.excalidraw_link:
             self.excalidraw_link = f"https://excalidraw.com/#room={self.room_id}"
         super().save(*args, **kwargs)
@@ -67,8 +67,27 @@ class Task(models.Model):
 
 class Whiteboard(models.Model):
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="whiteboard")
-    drawing_data = models.JSONField(default=dict)  # Store Excalidraw data as JSON
+    drawing_data = models.JSONField(default=dict)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Whiteboard for {self.project.title}"
+
+class ProjectStatusLog(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    old_status = models.CharField(max_length=20, choices=Project.STATUS_CHOICES)
+    new_status = models.CharField(max_length=20, choices=Project.STATUS_CHOICES)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.project.title}: {self.old_status} -> {self.new_status} at {self.changed_at}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()  # Already supports HTML like <a href>
+    link = models.URLField(null=True, blank=True)  # Optional: Store the meeting link separately
+    created_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.message[:50]}"

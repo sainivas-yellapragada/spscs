@@ -41,20 +41,22 @@
     <div id="main">
         <span class="menu-btn" id="menuToggle">☰</span>
 
+        <!-- User Notifications -->
         <div class="notification-container">
             <h2>Notifications</h2>
-            <div class="notification">
-                <span class="bell-icon">🔔</span>
-                <span class="message">You have a new follower!</span>
-            </div>
-            <div class="notification">
-                <span class="bell-icon">🔔</span>
-                <span class="message">Your post was liked by 5 people.</span>
-            </div>
-            <div class="notification">
-                <span class="bell-icon">🔔</span>
-                <span class="message">Someone commented on your photo.</span>
-            </div>
+            {% if notifications %}
+                {% for notification in notifications %}
+                    <div class="notification">
+                        <span class="bell-icon">🔔</span>
+                        <span class="message">{{ notification.message|safe }} ({{ notification.date }})</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="notification">
+                    <span class="bell-icon">🔔</span>
+                    <span class="message">No new notifications.</span>
+                </div>
+            {% endif %}
         </div>
     </div>
     <script src="{% static 'js/notifications.js' %}"></script>

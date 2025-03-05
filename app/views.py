@@ -5,15 +5,17 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from allauth.account.signals import user_signed_up, user_logged_in
 from django.dispatch import receiver
-from .models import Profile, Project, Whiteboard, Task
+from .models import Profile, Project, Whiteboard, Task, ProjectStatusLog, Notification
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
-from datetime import date
+from datetime import date, timedelta
 from xhtml2pdf import pisa
 from django.template.loader import render_to_string
+import random
+import string
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +65,7 @@ def home(request):
     user_tasks = Task.objects.filter(assigned_to=request.user)
     today = date.today()
     for task in user_tasks:
-        if task.status not in ['ON_HOLD', 'DONE']:  # Preserve admin/employee-set statuses
+        if task.status not in ['ON_HOLD', 'DONE']:
             if task.end_date < today:
                 task.status = 'BACKLOG'
             elif task.start_date <= today <= task.end_date:
@@ -73,16 +75,16 @@ def home(request):
             task.save()
 
     # Task urgency categorization
-    urgent_tasks = user_tasks.filter(status__in=['DOING', 'BACKLOG'])  # Include all DOING and BACKLOG tasks
-    minor_tasks = user_tasks.filter(status='UNFINISHED', start_date__gt=today)  # Future tasks
-    pending_tasks = user_tasks.filter(status='ON_HOLD')  # On Hold tasks
+    urgent_tasks = user_tasks.filter(status__in=['DOING', 'BACKLOG'])
+    minor_tasks = user_tasks.filter(status='UNFINISHED', start_date__gt=today)
+    pending_tasks = user_tasks.filter(status='ON_HOLD')
 
     # Project stage counts for the donut chart
     project_stages = {
         "Planning": projects.filter(status="Planning").count(),
-        "Design": projects.filter(status="Design").count(),
-        "Building": projects.filter(status="Building").count(),
-        "Testing": projects.filter(status="Testing").count(),  # Testing means complete
+        "Design": projects.filter(status="In Progress").count(),
+        "Building": 0,
+        "Testing": projects.filter(status="Completed").count(),
     }
 
     logger.debug(f"User {request.user.username} tasks - Urgent: {list(urgent_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Minor: {list(minor_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Pending: {list(pending_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}")
@@ -99,8 +101,9 @@ def home(request):
         'minor_tasks': minor_tasks,
         'pending_tasks': pending_tasks,
         'login_type': login_type,
-        'project_stages': project_stages,  # Pass project stages to the template
+        'project_stages': project_stages,
     })
+
 # Admin Home page (protected) - Admin landing page
 @login_required
 def admin_home(request):
@@ -111,12 +114,11 @@ def admin_home(request):
     profile = Profile.objects.filter(user=request.user).first()
     all_projects = Project.objects.all()
     all_users = User.objects.all()
-    tasks = Task.objects.all()  # Fetch all tasks for admin overview
+    tasks = Task.objects.all()
     today = date.today()
     
-    # Update task statuses dynamically
     for task in tasks:
-        if task.status not in ['ON_HOLD', 'DONE']:  # Preserve admin/employee-set statuses
+        if task.status not in ['ON_HOLD', 'DONE']:
             if task.end_date < today:
                 task.status = 'BACKLOG'
             elif task.start_date <= today <= task.end_date:
@@ -125,7 +127,6 @@ def admin_home(request):
                 task.status = 'UNFINISHED'
             task.save()
 
-    # Build team_members_dict with project as "team" and users assigned to its tasks
     team_members_dict = {}
     for task in tasks:
         project = task.project
@@ -284,10 +285,17 @@ def create_project(request):
 def update_project_status(request, project_id):
     project = Project.objects.get(id=project_id)
     if request.method == "POST":
-        status = request.POST.get('status')
-        project.status = status
-        project.save()
-        messages.success(request, "Project status updated.")
+        old_status = project.status
+        new_status = request.POST.get('status')
+        if old_status != new_status:
+            project.status = new_status
+            project.save()
+            ProjectStatusLog.objects.create(
+                project=project,
+                old_status=old_status,
+                new_status=new_status
+            )
+            messages.success(request, "Project status updated.")
     return redirect('projects')
 
 @login_required
@@ -303,17 +311,12 @@ def tasks(request):
     user_tasks = Task.objects.filter(assigned_to=request.user)
     login_type = request.session.get('login_type', 'employee')
     
-    # Redirect admins to admin_tasks
     if login_type == 'admin':
         return redirect('admin_tasks')
 
-    # Log the tasks for debugging
-    logger.debug(f"Tasks for user {request.user.username}: {list(user_tasks.values('id', 'title', 'status'))}")
-
-    # Update task statuses dynamically for employees
     today = date.today()
     for task in user_tasks:
-        if task.status not in ['ON_HOLD', 'DONE']:  # Admin-controlled or employee-set statuses
+        if task.status not in ['ON_HOLD', 'DONE']:
             if task.end_date < today:
                 task.status = 'BACKLOG'
             elif task.start_date <= today <= task.end_date:
@@ -322,6 +325,7 @@ def tasks(request):
                 task.status = 'UNFINISHED'
             task.save()
 
+    logger.debug(f"Tasks for user {request.user.username}: {list(user_tasks.values('id', 'title', 'status'))}")
     return render(request, 'app/tasks.html', {
         'profile': profile,
         'tasks': user_tasks,
@@ -343,16 +347,15 @@ def admin_tasks(request):
         messages.error(request, "You do not have permission to access this page.")
         return redirect('home')
     
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+    profile = Profile.objects.get_or_create(user=request.user)[0]
     tasks = Task.objects.all()
     all_projects = Project.objects.all()
     all_users = User.objects.all()
     login_type = request.session.get('login_type', 'employee')
     
-    # Update task statuses dynamically, preserving ON_HOLD and DONE
     today = date.today()
     for task in tasks:
-        if task.status not in ['ON_HOLD', 'DONE']:  # Admin-controlled or employee-set
+        if task.status not in ['ON_HOLD', 'DONE']:
             if task.end_date < today:
                 task.status = 'BACKLOG'
             elif task.start_date <= today <= task.end_date:
@@ -377,7 +380,7 @@ def create_task(request):
     if request.method == "POST":
         title = request.POST.get('title')
         project_id = request.POST.get('project')
-        assigned_to_ids = request.POST.getlist('team_members')  # From JS hidden inputs
+        assigned_to_ids = request.POST.getlist('team_members')
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         status = request.POST.get('status', 'UNFINISHED')
@@ -411,7 +414,7 @@ def update_task_status(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     if request.method == "POST":
         status = request.POST.get('status')
-        if status in ['ON_HOLD', 'UNFINISHED']:  # Only admin can set these
+        if status in ['ON_HOLD', 'UNFINISHED']:
             task.status = status
             task.save()
             messages.success(request, "Task status updated.")
@@ -433,7 +436,11 @@ def canvas(request):
     return render(request, 'app/canvas.html', {'login_type': login_type})
 
 def get_users(request):
-    users = User.objects.values("id", "username")
+    query = request.GET.get('q', '')
+    if query:
+        users = User.objects.filter(username__icontains=query).values("id", "username")[:5]
+    else:
+        users = []
     return JsonResponse(list(users), safe=False)
 
 @login_required
@@ -479,48 +486,41 @@ def get_excalidraw_data(request, project_id):
 
 @login_required
 def report(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+    profile = Profile.objects.get_or_create(user=request.user)[0]
     login_type = request.session.get('login_type', 'employee')
 
-    # Total Projects and Projects in Testing (final stage)
     user_projects = Project.objects.filter(team_members=request.user)
     total_projects = user_projects.count()
-    completed_projects = user_projects.filter(status='Testing').count()  # Final stage is Testing
+    completed_projects = user_projects.filter(status='Completed').count()
     
-    # Closed Tasks
     user_tasks = Task.objects.filter(assigned_to=request.user)
     total_tasks = user_tasks.count()
     closed_tasks = user_tasks.filter(status='DONE').count()
 
-    # Calculate offsets for donut charts (circumference = 2πr = 377 for r=60)
-    # Projects: Percentage of total projects out of a fixed maximum of 100
-    projects_progress = (total_projects / 100) * 100  # Scale to 100 as max
+    projects_progress = (total_projects / 100) * 100
     projects_offset = 377 - (377 * (projects_progress / 100))
 
-    # Tasks: Percentage of closed tasks out of a fixed maximum of 100
-    tasks_progress = (closed_tasks / 100) * 100  # Scale to 100 as max
+    tasks_progress = (closed_tasks / 100) * 100
     tasks_offset = 377 - (377 * (tasks_progress / 100))
 
-    # Project summary data
     project_summaries = []
     progress_map = {
         'Planning': 25,
         'In Progress': 75,
-        'Testing': 100  # Final stage is Testing
+        'Completed': 100
     }
     for project in user_projects:
-        progress = progress_map.get(project.status, 0)  # Default to 0 if status not in map
-        manager = request.user if login_type == 'admin' else None  # Admin is the manager
+        progress = progress_map.get(project.status, 0)
+        manager = request.user if login_type == 'admin' else None
         project_summaries.append({
             'name': project.title,
             'manager': f"{manager.first_name} {manager.last_name}" if manager else "N/A",
-            'due_date': project.updated_at.strftime('%Y-%m-%d'),  # Using updated_at as due_date isn't present
+            'due_date': project.updated_at.strftime('%Y-%m-%d'),
             'status': project.status,
             'progress': progress
         })
 
     if request.method == "POST" and 'download_pdf' in request.POST:
-        # Generate PDF
         pdf_template = 'app/report_pdf.html'
         context = {
             'user': request.user,
@@ -548,13 +548,185 @@ def report(request):
         'total_tasks': total_tasks,
         'projects_offset': projects_offset,
         'tasks_offset': tasks_offset,
-        'projects': project_summaries,  # For the table
+        'projects': project_summaries,
     })
 
 @login_required
 def notifications(request):
-    return render(request, 'app/notifications.html')
+    profile = Profile.objects.get_or_create(user=request.user)[0]
+    login_type = request.session.get('login_type', 'employee')
+    today = date.today()
 
-@login_required 
+    # Task deadline notifications
+    user_tasks = Task.objects.filter(assigned_to=request.user)
+    deadline_notifications = []
+    for task in user_tasks:
+        if task.status != 'DONE':
+            days_until_deadline = (task.end_date - today).days
+            if 0 <= days_until_deadline <= 2:
+                deadline_notifications.append({
+                    'task_title': task.title,
+                    'days_left': days_until_deadline,
+                    'end_date': task.end_date
+                })
+
+    # Project status change notifications
+    user_projects = Project.objects.filter(team_members=request.user)
+    project_notifications = []
+    recent_logs = ProjectStatusLog.objects.filter(
+        project__in=user_projects,
+        changed_at__gte=today - timedelta(days=7)
+    )
+    for log in recent_logs:
+        project_notifications.append({
+            'project_title': log.project.title,
+            'old_status': log.old_status,
+            'new_status': log.new_status,
+            'updated_at': log.changed_at
+        })
+
+    # Meeting notifications from Notification model
+    meeting_notifications = Notification.objects.filter(user=request.user, read=False).order_by('-created_at')
+
+    # Combine all notifications into a single list
+    notifications_list = []
+
+    # Add task deadline notifications
+    for dn in deadline_notifications:
+        if dn['days_left'] == 0:
+            message = f"Task '{dn['task_title']}' deadline is today!"
+        else:
+            message = f"Task '{dn['task_title']}' deadline in {dn['days_left']} day{'s' if dn['days_left'] > 1 else ''}!"
+        notifications_list.append({'message': message, 'date': dn['end_date']})
+
+    # Add project status change notifications
+    for pn in project_notifications:
+        message = f"Project '{pn['project_title']}' moved from {pn['old_status']} to {pn['new_status']}."
+        notifications_list.append({'message': message, 'date': pn['updated_at']})
+
+    # Add meeting notifications
+    for notification in meeting_notifications:
+        notifications_list.append({'message': notification.message, 'date': notification.created_at})
+
+    return render(request, 'app/notifications.html', {
+        'profile': profile,
+        'login_type': login_type,
+        'notifications': notifications_list,
+    })
+
+@login_required
 def admin_notifications(request):
-    return render(request, 'app/admin_notifications.html')
+    if request.session.get('login_type') != 'admin':
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('home')
+
+    profile = Profile.objects.get_or_create(user=request.user)[0]
+    login_type = request.session.get('login_type', 'employee')
+    today = date.today()
+
+    # Task deadline notifications (all tasks)
+    all_tasks = Task.objects.all()
+    task_notifications = []
+    for task in all_tasks:
+        if task.status != 'DONE':
+            days_until_deadline = (task.end_date - today).days
+            if 0 <= days_until_deadline <= 2:
+                task_notifications.append({
+                    'task_title': task.title,
+                    'days_left': days_until_deadline,
+                    'end_date': task.end_date
+                })
+
+    # Project status change notifications (all projects) + meeting notifications
+    all_projects = Project.objects.all()
+    project_notifications = []
+    recent_logs = ProjectStatusLog.objects.filter(
+        project__in=all_projects,
+        changed_at__gte=today - timedelta(days=7)
+    )
+    for log in recent_logs:
+        project_notifications.append({
+            'project_title': log.project.title,
+            'old_status': log.old_status,
+            'new_status': log.new_status,
+            'updated_at': log.changed_at
+        })
+
+    # Add meeting notifications to project notifications for admin
+    meeting_notifications = Notification.objects.filter(user=request.user, read=False).order_by('-created_at')
+    for notification in meeting_notifications:
+        project_notifications.append({
+            'message': notification.message,
+            'date': notification.created_at
+        })
+
+    # Prepare notifications for template
+    task_notifications_list = []
+    for tn in task_notifications:
+        if tn['days_left'] == 0:
+            message = f"Task '{tn['task_title']}' deadline is today!"
+        else:
+            message = f"Task '{tn['task_title']}' deadline in {tn['days_left']} day{'s' if tn['days_left'] > 1 else ''}!"
+        task_notifications_list.append({'message': message, 'date': tn['end_date']})
+
+    project_notifications_list = []
+    for pn in project_notifications:
+        if 'project_title' in pn:
+            message = f"Project '{pn['project_title']}' moved from {pn['old_status']} to {pn['new_status']}."
+            project_notifications_list.append({'message': message, 'date': pn['updated_at']})
+        else:
+            project_notifications_list.append({'message': pn['message'], 'date': pn['date']})
+
+    return render(request, 'app/admin_notifications.html', {
+        'profile': profile,
+        'login_type': login_type,
+        'task_notifications': task_notifications_list,
+        'project_notifications': project_notifications_list,
+    })
+    
+@login_required
+def schedule_meeting(request):
+    if request.session.get('login_type') != 'admin':
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('home')
+
+    if request.method == "POST":
+        meeting_datetime = request.POST.get('meeting_datetime')
+        agenda = request.POST.get('agenda')
+        users_input = request.POST.get('users', '').strip()
+
+        # Generate unique Jitsi meeting link
+        meeting_link = generate_jitsi_link()
+
+        # Format the notification message with clickable link
+        meeting_date = meeting_datetime.split('T')[0]
+        meeting_time = meeting_datetime.split('T')[1]
+        message = f"A meeting is scheduled on {meeting_date} at {meeting_time} with agenda: {agenda}. Meeting link: <a href='{meeting_link}' target='_blank'>{meeting_link}</a>"
+
+        # Determine recipients, including the admin
+        admin_user = request.user
+        if users_input:
+            usernames = [u.strip() for u in users_input.split(',') if u.strip()]
+            recipients = User.objects.filter(username__in=usernames)
+            if recipients.count() != len(usernames):
+                messages.warning(request, "Some usernames were not found.")
+            if admin_user not in recipients:
+                recipients = list(recipients) + [admin_user]
+        else:
+            recipients = list(User.objects.all())
+            if admin_user not in recipients:
+                recipients.append(admin_user)
+
+        # Save notifications to the database
+        for user in recipients:
+            Notification.objects.create(user=user, message=message)
+            logger.debug(f"Notification saved for {user.username}: {message}")
+
+        messages.success(request, "Meeting scheduled and notifications sent!")
+        return redirect('admin_notifications')
+
+    return redirect('admin_notifications')
+# Function to generate unique Jitsi meeting link (moved to bottom)
+def generate_jitsi_link():
+    room_name = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+    return f"https://meet.jit.si/{room_name}"
