@@ -135,9 +135,30 @@ def admin_home(request):
         for user in task.assigned_to.all():
             team_members_dict[project].add(user)
 
+    # Fetch meeting notifications for the current user
+    meeting_notifications = Notification.objects.filter(user=request.user, message__contains="A meeting is scheduled")
+    meetings = []
+    for notification in meeting_notifications:
+        # Parse the message to extract date, time, and link
+        # Expected format: "A meeting is scheduled on YYYY-MM-DD at HH:MM with agenda: [agenda]. Meeting link: <a href='[link]' target='_blank'>[link]</a>"
+        message = notification.message
+        try:
+            date_str = message.split("on ")[1].split(" at ")[0]  # e.g., "2025-03-07"
+            time_str = message.split("at ")[1].split(" with ")[0]  # e.g., "14:30"
+            link_start = message.index("href='") + 6
+            link_end = message.index("'", link_start)
+            link = message[link_start:link_end]  # e.g., "https://meet.jit.si/abc123"
+            meetings.append({
+                'date': date_str,
+                'time': time_str,
+                'link': link
+            })
+        except (IndexError, ValueError) as e:
+            logger.warning(f"Could not parse meeting notification: {message}, error: {e}")
+
     login_type = request.session.get('login_type', 'employee')
 
-    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={login_type}, tasks={list(tasks.values('id', 'title', 'status'))}, team_members_dict={[(p.title, [u.username for u in users]) for p, users in team_members_dict.items()]}")
+    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={login_type}, tasks={list(tasks.values('id', 'title', 'status'))}, team_members_dict={[(p.title, [u.username for u in users]) for p, users in team_members_dict.items()]}, meetings={meetings}")
     return render(request, 'app/adminhome.html', {
         'user': request.user,
         'profile': profile,
@@ -145,9 +166,10 @@ def admin_home(request):
         'all_users': all_users,
         'tasks': tasks,
         'team_members_dict': team_members_dict,
-        'login_type': login_type
+        'login_type': login_type,
+        'meetings': meetings  # Pass meeting data to template
     })
-
+    
 # Logout user
 def logout_view(request):
     logger.debug(f"Logging out user {request.user.username}")

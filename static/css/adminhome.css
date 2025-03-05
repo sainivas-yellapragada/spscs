@@ -35,7 +35,7 @@ header p {
   font-size: 30px;
   cursor: pointer;
   z-index: 1100;
-  color: yellow;
+  color: rgb(255, 200, 2);
   background: none;
   border: none;
 }
@@ -146,6 +146,7 @@ header p {
   padding: 10px;
   text-align: center;
   border: 1px solid #ddd;
+  position: relative; /* For positioning the meeting dot */
 }
 
 .calendar th {
@@ -155,12 +156,57 @@ header p {
 
 /* Highlight Today's Date */
 .today {
-  background: cyan !important;
+  background: rgb(168, 238, 238) !important;
   color: rgba(0, 0, 0, 0.482) !important;
   font-weight: bold;
   border-radius: 0px;
   padding: 10px;
   text-align: center;
+}
+
+/* Meeting Dot */
+.calendar td.has-meeting::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background-color: #000dff; /* Dark blue */
+  border-radius: 50%;
+  z-index: 10;
+}
+
+/* Tooltip for Meeting Info */
+.calendar td.has-meeting {
+  position: relative;
+}
+
+.calendar td.has-meeting .tooltip {
+  visibility: hidden;
+  width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 100%; /* Position above the cell */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.calendar td.has-meeting:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.calendar td.has-meeting .tooltip a {
+  color: #00bfff; /* Light blue for clickable link */
+  text-decoration: underline;
 }
 
 /* Team and Project Sections */
@@ -173,12 +219,17 @@ header p {
   background: #e8e8e8;
 }
 
-.team, .project-updates, .total-projects {
+.team, .project-updates {
   flex: 1;
-  padding: 80px;
   background: white;
   border-radius: 8px;
   text-align: center;
+  position: relative;
+  padding: 20px;
+  padding-top: 50px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 /* Headings */
@@ -188,46 +239,46 @@ header p {
   margin-bottom: 10px;
 }
 
-/* Team Table */
-.team table th {
+/* Team and Project Tables */
+.team table, .project-updates table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.team table th, .project-updates table th {
   background-color: #ee420d;
   color: #fff;
   padding: 12px;
   font-size: 1.2rem;
   font-weight: bold;
   text-align: center;
-  width: 500px;
+  width: 50%;
 }
 
-.team table td {
+.team table td, .project-updates table td {
   background-color: #f5f5f5;
   color: #333;
-  padding: 20px;
+  padding: 15px;
   border-radius: 5px;
   transition: background-color 0.3s ease;
+  text-align: center;
+  vertical-align: middle;
 }
 
-.team table td:hover {
+.team table td:hover, .project-updates table td:hover {
   background-color: #e0e0e0;
 }
 
-.project-updates .project-item,
-.total-projects .project-item {
-  background-color: #dcdcdc;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
+/* Status-specific styling for Ongoing Projects */
+.project-updates .project-status[data-status="Planning"] {
+  background-color: #6c757d;
+  color: white;
 }
 
-.project-updates,
-.total-projects {
-  margin-top: 0px;
-}
-
-.team table td,
-.project-updates .project-item,
-.total-projects .project-item {
-  font-size: 1.1rem;
+.project-updates .project-status[data-status="In Progress"] {
+  background-color: #28a745;
+  color: white;
 }
 
 /* Task Columns and Rectangles */
@@ -256,9 +307,9 @@ header p {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  max-height: 300px; /* Set a max height for scrolling */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-right: 5px; /* Space for scrollbar */
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
 }
 
 /* Vertical separator line */
@@ -288,71 +339,52 @@ header p {
 
 /* Task status colors */
 .task-rectangle[data-status="DOING"] {
-  background-color: #28a745; /* Green for ongoing */
+  background-color: #28a745;
 }
 
 .task-rectangle[data-status="BACKLOG"] {
-  background-color: #dc3545; /* Red for backlog */
+  background-color: #dc3545;
 }
 
 .task-rectangle[data-status="ON_HOLD"] {
-  background-color: #fd7e14; /* Orange for on hold */
+  background-color: #fd7e14;
 }
 
 .task-rectangle[data-status="DONE"] {
-  background-color: #007bff; /* Blue for done */
+  background-color: #007bff;
 }
 
 .task-rectangle[data-status="UNFINISHED"] {
-  background-color: #6c757d; /* Gray for unfinished */
+  background-color: #6c757d;
 }
 
 /* User rectangle color (purple) */
 .user-rectangle {
-  background-color: #6f42c1; /* Purple for users */
-}
-
-/* Team Section with Scroll */
-.team {
-  position: relative;
-  padding-top: 50px;
-  max-height: 400px; /* Set a max height for scrolling */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-right: 5px; /* Space for scrollbar */
-}
-
-.team table {
-  width: 100%;
+  background-color: #6f42c1;
 }
 
 /* Main content area */
 #main {
   transition: margin-left 0.5s;
   padding: 20px;
-  margin-left: 0; /* Adjust dynamically */
+  margin-left: 0;
   padding-top: 20px;
-  min-height: 100vh; /* Changed from height to min-height to allow growth */
-  overflow-y: auto; /* Enable vertical scrolling for the full page */
+  min-height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
 }
 
-/* Ensure "Team Details" and "Ongoing Projects" are at the top center */
+/* Ensure "Team Details" and "Ongoing Projects" headings are at the top center */
 .team .section-heading, 
 .project-updates .section-heading {
   text-align: center;
   width: 100%;
   position: absolute;
-  top: 20px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
-}
-
-/* Make sure the team and project containers have relative positioning */
-.team, .project-updates {
-  position: relative;
-  padding-top: 50px; /* Add space for the heading */
 }

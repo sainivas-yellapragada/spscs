@@ -51,7 +51,7 @@
                   <th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th>
                 </tr>
               </thead>
-              <tbody id="calendarBody"></tbody>
+              <tbody id="calendarBody" data-meetings='{{ meetings|json_script:"meetings-data" }}'></tbody>
             </table>
           </div>
 
@@ -92,7 +92,8 @@
             <div class="section-heading centered-heading"><b>Team Details</b></div>
             <table>
               <tr>
-                <th>Team Name</th><th>Assigned Members</th>
+                <th>Team Name</th>
+                <th>Assigned Members</th>
               </tr>
               {% for project, users in team_members_dict.items %}
               <tr>
@@ -113,15 +114,22 @@
 
           <div class="project-updates">
             <div class="section-heading centered-heading"><b>Ongoing Projects</b></div>
-            <div class="content">
+            <table>
+              <tr>
+                <th>Project Title</th>
+                <th>Status</th>
+              </tr>
               {% for project in all_projects %}
-                {% if project.status == 'In Progress' %}
-                  <div class="project-item">{{ project.title }}</div>
+                {% if project.status != 'Completed' %}
+                  <tr>
+                    <td>{{ project.title }}</td>
+                    <td class="project-status" data-status="{{ project.status }}">{{ project.status }}</td>
+                  </tr>
                 {% endif %}
               {% empty %}
-                <p>No ongoing projects</p>
+                <tr><td colspan="2">No ongoing projects</td></tr>
               {% endfor %}
-            </div>
+            </table>
           </div>
         </div>
       </main>
@@ -129,5 +137,9 @@
   </div>
 
   <script src="{% static 'js/adminhome.js' %}"></script>
+  <script type="text/javascript">
+    const meetingsData = {{ meetings|default:'[]'|safe }};
+    console.log("meetingsData from template:", meetingsData);
+  </script>
 </body>
 </html>
