@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Agenda Dashboard - Report</title>
+    <link rel="stylesheet" href="{% static 'css/admin_report.css' %}"> 
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu">
+            <a href="{% url 'admin_home' %}">Home</a>
+            <a href="{% url 'admin_tasks' %}">Tasks</a>
+            <a href="{% url 'admin_projects' %}">Projects</a>
+            <a href="{% url 'admin_report' %}">Admin Report</a>
+            <a href="{% url 'admin_notifications' %}">Notifications</a>
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+            <div class="profile" id="profile">
+                <a href="{% url 'profile_page' %}"><img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile"></a>
+            </div>
+            <form action="{% url 'logout' %}" method="post" class="sidebar-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <span class="menu-btn" id="menuToggle">☰</span>
+        
+        <div class="header">
+            <div class="circle-container">
+                <div class="circle-item">
+                    <h3>Total Projects (System-Wide)</h3>
+                    <div class="circle">
+                        <svg width="140" height="140">
+                            <circle cx="70" cy="70" r="60" stroke="#d3d3d3" stroke-width="15" fill="none"/>
+                            <circle cx="70" cy="70" r="60" stroke="#007bff" stroke-width="15" fill="none" 
+                                stroke-dasharray="377" stroke-dashoffset="{{ projects_offset }}"/>
+                        </svg>
+                        <p>{{ total_projects }}</p>
+                    </div>
+                </div>
+
+                <div class="circle-item">
+                    <h3>Closed Tasks (System-Wide)</h3>
+                    <div class="circle">
+                        <svg width="140" height="140">
+                            <circle cx="70" cy="70" r="60" stroke="#d3d3d3" stroke-width="15" fill="none"/>
+                            <circle cx="70" cy="70" r="60" stroke="#007bff" stroke-width="15" fill="none" 
+                                stroke-dasharray="377" stroke-dashoffset="{{ tasks_offset }}"/>
+                        </svg>
+                        <p>{{ closed_tasks }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="report-section">
+                <h2>Download Admin Report</h2>
+                <p>Click below to download the system-wide report.</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="download_pdf" class="download-btn">Download PDF</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="project-summary">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Project Manager</th>
+                        <th>Last Updated</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>{{ project.name }}</td>
+                        <td>{{ project.manager }}</td>
+                        <td>{{ project.due_date }}</td>
+                        <td>{{ project.status }}</td>
+                        <td>{{ project.progress }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No projects available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="{% static 'js/admin_report.js' %}"></script>
+</body>
+</html>

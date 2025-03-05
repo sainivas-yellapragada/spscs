@@ -1,0 +1,193 @@
+/* General Styles */
+body {
+    margin: 0;
+    transition: margin-left 0.5s ease;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #1a1a1a; /* Darker shade for admin */
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+.sidebar a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: white;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    color:rgb(255, 200, 2); /* Orange hover for admin */
+}
+
+.profile {
+    position: absolute;
+    bottom: 175px;
+    left: 45%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile img {
+    width: 70px !important;
+    height: 70px !important;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Menu Button */
+.menu-btn {
+    font-size: 30px;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    color: rgb(255, 238, 0); /* Orange for admin */
+    background: none;
+    border: none;
+}
+
+/* Main Content */
+#main-content {
+    margin-left: 10%;
+    padding: 20px;
+    transition: margin-left 0.5s ease;
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Circle Section */
+.circle-container {
+    display: flex;
+    gap: 50px;
+    position: relative;
+}
+
+/* Circle Wrapper */
+.circle-item {
+    text-align: center;
+}
+
+.circle-item h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Circle Styling */
+.circle {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+svg {
+    display: block;
+    margin: 0 auto;
+    width: 140px;
+    height: 140px;
+}
+
+.circle p {
+    position: absolute;
+    font-size: 22px;
+    font-weight: bold;
+    color: black;
+    margin: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Report Section */
+.report-section {
+    text-align: center;
+    flex: 1;
+}
+
+.download-btn {
+    background-color: #007bff; /* Orange for admin */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.download-btn:hover {
+    background-color: #0056b3; /* Darker orange */
+}
+
+/* Table Styles */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.project-summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.project-summary th, .project-summary td {
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+}
+
+.project-summary th {
+    background-color: #ff5722; /* Orange for admin */
+    color: white;
+}
+
+.project-summary td {
+    background-color: #f5f5f5;
+}
+
+/* Logout Button */
+.sidebar .logout-btn {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background-color:rgb(255, 200, 2); /* Orange for admin */
+    color: black;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.sidebar .logout-btn:hover {
+    background-color: #e5b100; /* Darker orange */
+}

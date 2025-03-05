@@ -568,6 +568,84 @@ def report(request):
     })
 
 @login_required
+def admin_report(request):
+    # Ensure only admins can access this view (optional check)
+    login_type = request.session.get('login_type', 'employee')
+    if login_type != 'admin':
+        return HttpResponse("Unauthorized access", status=403)
+
+    # Get the profile for the logged-in user
+    profile = Profile.objects.get_or_create(user=request.user)[0]
+
+    # Get ALL projects and tasks (not limited to the current user)
+    all_projects = Project.objects.all()
+    total_projects = all_projects.count()
+    completed_projects = all_projects.filter(status='Completed').count()
+
+    all_tasks = Task.objects.all()
+    total_tasks = all_tasks.count()
+    closed_tasks = all_tasks.filter(status='DONE').count()
+
+    # Calculate progress for the circular charts
+    projects_progress = (total_projects / 100) * 100 if total_projects > 0 else 0
+    projects_offset = 377 - (377 * (projects_progress / 100))
+
+    tasks_progress = (closed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
+    tasks_offset = 377 - (377 * (tasks_progress / 100))
+
+    # Prepare project summaries for all projects
+    project_summaries = []
+    progress_map = {
+        'Planning': 25,
+        'In Progress': 75,
+        'Completed': 100
+    }
+    for project in all_projects:
+        progress = progress_map.get(project.status, 0)
+        # Assuming project has a manager field; adjust if necessary
+        manager = project.manager if hasattr(project, 'manager') else None
+        project_summaries.append({
+            'name': project.title,
+            'manager': f"{manager.first_name} {manager.last_name}" if manager else "N/A",
+            'due_date': project.updated_at.strftime('%Y-%m-%d'),
+            'status': project.status,
+            'progress': progress
+        })
+
+    # Handle PDF download
+    if request.method == "POST" and 'download_pdf' in request.POST:
+        pdf_template = 'app/admin_report_pdf.html'  # Adjust if you have a separate PDF template
+        context = {
+            'user': request.user,
+            'total_projects': total_projects,
+            'completed_projects': completed_projects,
+            'closed_tasks': closed_tasks,
+            'total_tasks': total_tasks,
+            'projects': project_summaries,
+            'login_type': login_type,
+        }
+        html = render_to_string(pdf_template, context)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="admin_report.pdf"'
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('PDF generation failed', status=500)
+        return response
+
+    # Render the admin report page
+    return render(request, 'app/admin_report.html', {
+        'profile': profile,
+        'login_type': login_type,
+        'total_projects': total_projects,
+        'completed_projects': completed_projects,
+        'closed_tasks': closed_tasks,
+        'total_tasks': total_tasks,
+        'projects_offset': projects_offset,
+        'tasks_offset': tasks_offset,
+        'projects': project_summaries,
+    })
+
+@login_required
 def notifications(request):
     profile = Profile.objects.get_or_create(user=request.user)[0]
     login_type = request.session.get('login_type', 'employee')
