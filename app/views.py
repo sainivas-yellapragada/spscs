@@ -267,6 +267,22 @@ def projects(request):
     })
 
 @login_required
+def admin_projects(request):
+    if request.session.get('login_type') != 'admin':
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('home')
+    
+    profile = Profile.objects.get_or_create(user=request.user)[0]
+    projects = Project.objects.all()  # Admin sees all projects
+    login_type = request.session.get('login_type', 'employee')
+    
+    return render(request, 'app/admin_projects.html', {
+        'profile': profile,
+        'projects': projects,
+        'login_type': login_type
+    })
+
+@login_required
 def create_project(request):
     if request.method == "POST":
         title = request.POST.get('title')
@@ -436,7 +452,7 @@ def canvas(request):
     return render(request, 'app/canvas.html', {'login_type': login_type})
 
 def get_users(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '')  # Use 'q' to match the JavaScript
     if query:
         users = User.objects.filter(username__icontains=query).values("id", "username")[:5]
     else:
