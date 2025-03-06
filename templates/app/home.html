@@ -12,20 +12,11 @@
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="menu">
-      {% if login_type == 'admin' %}
-        <a href="{% url 'admin_home' %}">Home</a>
-      {% else %}
-        <a href="{% url 'home' %}">Home</a>
-      {% endif %}
-      {% if login_type == 'admin' %}
-        <a href="{% url 'admin_tasks' %}">Tasks</a>
-      {% else %}
-        <a href="{% url 'tasks' %}">Tasks</a>
-      {% endif %}
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'tasks' %}">Tasks</a>
       <a href="{% url 'projects' %}">Projects</a>
       <a href="{% url 'report' %}">Report</a>
       <a href="{% url 'notifications' %}">Notifications</a>
-      <br><br><br><br><br><br><br><br><br><br><br><br>
       <div class="profile" id="profile">
         <a href="{% url 'profile_page' %}">
           <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
@@ -65,16 +56,13 @@
           </div>
 
           <div class="tasks">
-            <div class="section-heading"><b>Tasks</b></div>
+            <div class="section-heading"><b>Tasks Assigned</b></div>
             <div class="task-columns">
               <div class="task-column">
                 <h3>Urgent</h3>
                 <div class="task-content">
                   {% for task in urgent_tasks %}
-                    <div class="task-item task-rectangle" data-status="{{ task.status }}">
-                      {{ task.title }} ({{ task.project.title }})<br>
-                      Due: {{ task.end_date|date:"Y-m-d" }}
-                    </div>
+                    <div class="task-rectangle" data-status="{{ task.status }}">{{ task.title }}</div>
                   {% empty %}
                     <p>No urgent tasks</p>
                   {% endfor %}
@@ -84,10 +72,7 @@
                 <h3>Minor</h3>
                 <div class="task-content">
                   {% for task in minor_tasks %}
-                    <div class="task-item task-rectangle" data-status="{{ task.status }}">
-                      {{ task.title }} ({{ task.project.title }})<br>
-                      Due: {{ task.end_date|date:"Y-m-d" }}
-                    </div>
+                    <div class="task-rectangle" data-status="{{ task.status }}">{{ task.title }}</div>
                   {% empty %}
                     <p>No minor tasks</p>
                   {% endfor %}
@@ -97,10 +82,7 @@
                 <h3>Pending</h3>
                 <div class="task-content">
                   {% for task in pending_tasks %}
-                    <div class="task-item task-rectangle" data-status="{{ task.status }}">
-                      {{ task.title }} ({{ task.project.title }})<br>
-                      Due: {{ task.end_date|date:"Y-m-d" }}
-                    </div>
+                    <div class="task-rectangle" data-status="{{ task.status }}">{{ task.title }}</div>
                   {% empty %}
                     <p>No pending tasks</p>
                   {% endfor %}
@@ -110,35 +92,45 @@
           </div>
         </div>
 
-        <!-- Team, Project Updates & Total Projects -->
-        <div class="section-container team-projects-container">
+        <!-- Team & Project Updates -->
+        <div class="team-projects-container">
           <div class="team">
             <div class="section-heading"><b>Team Details</b></div>
             <table>
               <tr>
-                <th>Member</th><th>Projects</th>
+                <th>Member</th>
+                <th>Projects</th>
               </tr>
               {% for member, projects in team_members_dict.items %}
               <tr>
-                <td>{{ member.first_name|default:member.username }} {{ member.last_name|default:"" }}</td>
-                <td>{{ projects|join:" | " }}</td>
+                <td>{{ member.username }}</td>
+                <td>{{ projects|join:", " }}</td>
               </tr>
               {% empty %}
-              <tr><td colspan="2">No team members found.</td></tr>
+              <tr><td colspan="2">No team members found</td></tr>
               {% endfor %}
             </table>
           </div>
 
           <div class="project-updates">
             <div class="section-heading"><b>Project Updates</b></div>
-            <div class="content"></div>
+            <div class="notification-list">
+              {% for notification in project_notifications %}
+                <div class="notification-item">
+                  <span>{{ notification.message }}</span>
+                  <div class="notification-date">{{ notification.date }}</div>
+                </div>
+              {% empty %}
+                <p>No updates available</p>
+              {% endfor %}
+            </div>
           </div>
 
           <div class="total-projects">
             <div class="section-heading"><b>Total Projects</b></div>
             <div class="chart-container">
+              <canvas id="totalProjectsChart"></canvas>
               <div class="custom-legend" id="project-legend"></div>
-              <canvas id="totalProjectsChart" height="150"></canvas>
             </div>
           </div>
         </div>
@@ -146,8 +138,14 @@
     </div>
   </div>
 
-  <!-- Pass project stages data to JavaScript -->
+  <!-- Pass project stages, meetings, and task deadlines to JavaScript -->
   {{ project_stages|json_script:"project-stages" }}
+  <script type="text/javascript">
+    const meetingsData = {{ meetings|default:'[]'|safe }};
+    const taskDeadlinesData = {{ task_deadlines|default:'[]'|safe }};
+    console.log("meetingsData from template:", meetingsData);
+    console.log("taskDeadlinesData from template:", taskDeadlinesData);
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{% static 'js/home.js' %}"></script>
 </body>

@@ -14,6 +14,19 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   }
 });
 
+// Match Team and Project Updates height to Total Projects
+function matchSectionHeights() {
+  const totalProjects = document.querySelector('.total-projects');
+  const team = document.querySelector('.team');
+  const projectUpdates = document.querySelector('.project-updates');
+
+  const totalProjectsHeight = totalProjects.offsetHeight;
+  console.log("Total Projects Height:", totalProjectsHeight);
+
+  team.style.height = `${totalProjectsHeight}px`;
+  projectUpdates.style.height = `${totalProjectsHeight}px`;
+}
+
 // Calendar and Chart functionality
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM fully loaded");
@@ -29,7 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function loadCalendar() {
     const today = new Date();
     const month = today.toLocaleString("default", { month: "long" });
-    document.getElementById("currentMonth").textContent = month;
+    const year = today.getFullYear();
+    document.getElementById("currentMonth").textContent = `${month} ${year}`;
 
     const calendarBody = document.getElementById("calendarBody");
     calendarBody.innerHTML = "";
@@ -42,17 +56,57 @@ document.addEventListener("DOMContentLoaded", function () {
       row.appendChild(document.createElement("td"));
     }
 
+    const meetings = typeof meetingsData !== 'undefined' ? meetingsData : [];
+    const taskDeadlines = typeof taskDeadlinesData !== 'undefined' ? taskDeadlinesData : [];
+    console.log("Meetings data received:", meetings);
+    console.log("Task deadlines data received:", taskDeadlines);
+
     for (let day = 1; day <= totalDays; day++) {
       const dayCell = document.createElement("td");
       dayCell.textContent = day;
+
+      const currentDate = `${year}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      // Meetings
+      const meeting = meetings.find(m => m.date === currentDate);
+      if (meeting) {
+        console.log(`Meeting found on ${currentDate}:`, meeting);
+        dayCell.classList.add("has-meeting");
+        const meetingDot = document.createElement("span");
+        meetingDot.classList.add("meeting-dot");
+        dayCell.appendChild(meetingDot);
+
+        const meetingTooltip = document.createElement("div");
+        meetingTooltip.classList.add("tooltip", "meeting-tooltip");
+        meetingTooltip.innerHTML = `Meeting at ${meeting.time}<br><a href="${meeting.link}" target="_blank">${meeting.link}</a>`;
+        dayCell.appendChild(meetingTooltip);
+      }
+
+      // Task Deadlines
+      const deadline = taskDeadlines.find(t => t.end_date === currentDate);
+      if (deadline) {
+        console.log(`Task deadline found on ${currentDate}:`, deadline);
+        dayCell.classList.add("has-deadline");
+        const deadlineDot = document.createElement("span");
+        deadlineDot.classList.add("deadline-dot");
+        dayCell.appendChild(deadlineDot);
+
+        const deadlineTooltip = document.createElement("div");
+        deadlineTooltip.classList.add("tooltip", "deadline-tooltip");
+        deadlineTooltip.innerHTML = `${deadline.title} deadline`;
+        dayCell.appendChild(deadlineTooltip);
+      }
+
       row.appendChild(dayCell);
 
-      if ((startDay + day) % 7 === 0) {
+      if ((startDay + day - 1) % 7 === 6) {
         calendarBody.appendChild(row);
         row = document.createElement("tr");
       }
     }
-    calendarBody.appendChild(row);
+    if (row.children.length > 0) {
+      calendarBody.appendChild(row);
+    }
 
     // Highlight today
     const todayCell = calendarBody.querySelectorAll("td");
@@ -75,11 +129,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const projectStages = JSON.parse(projectStagesData.textContent);
       console.log("Parsed Project Stages:", projectStages);
 
-      // Define stages and colors
       const stages = ["Planning", "Design", "Building", "Testing"];
       const colors = ["#6c757d", "#fd7e14", "#28a745", "#007bff"];
 
-      // Populate custom legend
       const legendContainer = document.getElementById("project-legend");
       stages.forEach((stage, index) => {
         const legendItem = document.createElement("div");
@@ -101,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
       new Chart(ctx, {
         type: "doughnut",
         data: {
-          labels: stages, // Keep simple labels for chart (won't be shown)
+          labels: stages,
           datasets: [{
             data: [
               projectStages["Planning"],
@@ -118,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false // Disable default legend
+              display: false
             }
           }
         }
@@ -130,4 +182,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadCalendar();
   loadTotalProjectsChart();
+
+  setTimeout(matchSectionHeights, 100);
 });
+
+window.addEventListener('resize', matchSectionHeights);

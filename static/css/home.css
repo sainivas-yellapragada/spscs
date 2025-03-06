@@ -9,8 +9,8 @@ body {
   transition: margin-left 0.5s;
   padding: 20px;
   margin-left: 0;
-  min-height: 100vh; /* Allow page to grow */
-  overflow-y: auto; /* Enable full-page scrolling */
+  min-height: 100vh;
+  overflow-y: auto;
 }
 
 .container {
@@ -141,6 +141,7 @@ header p {
   padding: 20px;
   background: white;
   border-radius: 8px;
+  overflow-y: auto;
 }
 
 /* Calendar Table */
@@ -153,6 +154,7 @@ header p {
   padding: 10px;
   text-align: center;
   border: 1px solid #ddd;
+  position: relative;
 }
 
 .calendar th {
@@ -170,12 +172,77 @@ header p {
   text-align: center;
 }
 
+/* Meeting Dot (Blue, Top-Right) */
+.meeting-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background-color: #00008b; /* Blue */
+  border-radius: 50%;
+  z-index: 10;
+}
+
+/* Task Deadline Dot (Red, Top-Left) */
+.deadline-dot {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff0000; /* Red */
+  border-radius: 50%;
+  z-index: 10;
+}
+
+/* Tooltip Base Styles */
+.calendar td {
+  position: relative;
+}
+
+.calendar .tooltip {
+  visibility: hidden;
+  width: 200px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1000;
+  top: 50%;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Meeting Tooltip (Right) */
+.calendar td.has-meeting:hover .meeting-tooltip {
+  visibility: visible;
+  opacity: 1;
+  left: 100%; /* Position to the right */
+  transform: translateY(-50%);
+}
+
+.calendar td.has-meeting .meeting-tooltip a {
+  color: #00bfff;
+  text-decoration: underline;
+}
+
+/* Deadline Tooltip (Left) */
+.calendar td.has-deadline:hover .deadline-tooltip {
+  visibility: visible;
+  opacity: 1;
+  right: 100%; /* Position to the left */
+  transform: translateY(-50%);
+}
+
 /* Team and Project Sections */
 .team-projects-container {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
+  gap: 20px;
   padding: 20px;
   background: #878787ad;
 }
@@ -186,34 +253,80 @@ header p {
   background: white;
   border-radius: 8px;
   text-align: center;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-/* Total Projects Chart Styling */
-.total-projects {
+/* Team Section */
+.team {
+  flex: 1;
+}
+
+/* Project Updates with Sticky Title */
+.project-updates {
+  flex: 1;
+}
+
+.project-updates .section-heading {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding-bottom: 5px;
+  margin: 0;
+}
+
+.project-updates .notification-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 10px;
+}
+
+.project-updates .notification-item {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: left;
+  font-size: 1rem;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.project-updates .notification-item a {
+  color: #00bfff;
+  text-decoration: underline;
+}
+
+.project-updates .notification-date {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Total Projects Section */
+.total-projects {
+  flex: 1;
 }
 
 .chart-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px; /* Space between legend and chart */
+  gap: 20px;
 }
 
 .custom-legend {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Space between legend items */
+  gap: 10px;
   text-align: left;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 8px; /* Space between color box and text */
+  gap: 8px;
 }
 
 .legend-color {
@@ -223,7 +336,7 @@ header p {
 }
 
 .total-projects canvas {
-  max-width: 200px; /* Adjust size as needed */
+  max-width: 200px;
   max-height: 200px;
 }
 
@@ -235,6 +348,10 @@ header p {
 }
 
 /* Team Table */
+.team table {
+  width: 100%;
+}
+
 .team table th {
   background-color: #ee420d;
   color: #fff;
@@ -256,30 +373,11 @@ header p {
   background-color: #e0e0e0;
 }
 
-.project-updates .project-item,
-.total-projects .project-item {
-  background-color: #dcdcdc;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-
-.project-updates,
-.total-projects {
-  margin-top: 0px;
-}
-
-.team table td,
-.project-updates .project-item,
-.total-projects .project-item {
-  font-size: 1.1rem;
-}
-
 /* Task Columns and Rectangles */
 .task-columns {
   display: flex;
   justify-content: space-between;
-  align-items: stretch; /* Changed to stretch for consistent height */
+  align-items: stretch;
   gap: 20px;
 }
 
@@ -290,6 +388,7 @@ header p {
   background: white;
   border-radius: 8px;
   position: relative;
+  overflow-y: auto;
 }
 
 .task-column:not(:last-child)::after {
@@ -306,9 +405,9 @@ header p {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  max-height: 300px; /* Set a max height for scrolling */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-right: 5px; /* Space for scrollbar */
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
 }
 
 /* Task Rectangles */
@@ -327,32 +426,21 @@ header p {
 
 /* Task status colors */
 .task-rectangle[data-status="DOING"] {
-  background-color: #28a745; /* Green for ongoing */
+  background-color: #28a745;
 }
 
 .task-rectangle[data-status="BACKLOG"] {
-  background-color: #dc3545; /* Red for backlog */
+  background-color: #dc3545;
 }
 
 .task-rectangle[data-status="ON_HOLD"] {
-  background-color: #fd7e14; /* Orange for on hold */
+  background-color: #fd7e14;
 }
 
 .task-rectangle[data-status="DONE"] {
-  background-color: #007bff; /* Blue for done */
+  background-color: #007bff;
 }
 
 .task-rectangle[data-status="UNFINISHED"] {
-  background-color: #6c757d; /* Gray for unfinished */
-}
-
-/* Team Section with Scroll */
-.team {
-  max-height: 400px; /* Set a max height for scrolling */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-right: 5px; /* Space for scrollbar */
-}
-
-.team table {
-  width: 100%;
+  background-color: #6c757d;
 }

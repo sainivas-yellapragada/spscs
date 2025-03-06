@@ -136,10 +136,12 @@
     </div>
   </div>
 
-  <script src="{% static 'js/adminhome.js' %}"></script>
   <script type="text/javascript">
     const meetingsData = {{ meetings|default:'[]'|safe }};
+    const taskDeadlinesData = {{ task_deadlines|default:'[]'|safe }};
     console.log("meetingsData from template:", meetingsData);
+    console.log("taskDeadlinesData from template:", taskDeadlinesData);
   </script>
+  <script src="{% static 'js/adminhome.js' %}"></script>
 </body>
 </html>

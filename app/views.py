@@ -16,6 +16,7 @@ from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 import random
 import string
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -51,60 +52,92 @@ def login_view(request):
 @login_required
 def home(request):
     profile = Profile.objects.filter(user=request.user).first()
-    projects = Project.objects.filter(team_members=request.user)
-    team_members_dict = {}
-
-    for project in projects:
-        for member in project.team_members.all():
-            if member != request.user:
-                if member not in team_members_dict:
-                    team_members_dict[member] = []
-                team_members_dict[member].append(project.title)
-
-    # Get all tasks for the user and update statuses dynamically
-    user_tasks = Task.objects.filter(assigned_to=request.user)
+    all_projects = Project.objects.all()
+    tasks = Task.objects.filter(assigned_to=request.user)
     today = date.today()
-    for task in user_tasks:
-        if task.status not in ['ON_HOLD', 'DONE']:
-            if task.end_date < today:
-                task.status = 'BACKLOG'
-            elif task.start_date <= today <= task.end_date:
-                task.status = 'DOING'
-            elif task.start_date > today:
-                task.status = 'UNFINISHED'
-            task.save()
 
-    # Task urgency categorization
-    urgent_tasks = user_tasks.filter(status__in=['DOING', 'BACKLOG'])
-    minor_tasks = user_tasks.filter(status='UNFINISHED', start_date__gt=today)
-    pending_tasks = user_tasks.filter(status='ON_HOLD')
+    # Categorize tasks
+    urgent_tasks = tasks.filter(end_date__lte=today, status__in=['DOING', 'UNFINISHED'])
+    minor_tasks = tasks.filter(end_date__gt=today, status__in=['DOING', 'UNFINISHED'])
+    pending_tasks = tasks.filter(status='ON_HOLD')
 
-    # Project stage counts for the donut chart
+    # Team members and their projects
+    team_members_dict = {}
+    for task in tasks:
+        for user in task.assigned_to.all():
+            if user not in team_members_dict:
+                team_members_dict[user] = set()
+            team_members_dict[user].add(task.project.title)
+
+    # Project stages for chart
     project_stages = {
-        "Planning": projects.filter(status="Planning").count(),
-        "Design": projects.filter(status="In Progress").count(),
-        "Building": 0,
-        "Testing": projects.filter(status="Completed").count(),
+        "Planning": all_projects.filter(status="Planning").count(),
+        "Design": all_projects.filter(status="Design").count(),
+        "Building": all_projects.filter(status="In Progress").count(),
+        "Testing": all_projects.filter(status="Testing").count()
     }
-
-    logger.debug(f"User {request.user.username} tasks - Urgent: {list(urgent_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Minor: {list(minor_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}, Pending: {list(pending_tasks.values('id', 'title', 'status', 'start_date', 'end_date'))}")
-    logger.debug(f"Project stages for {request.user.username}: {project_stages}")
 
     login_type = request.session.get('login_type', 'employee')
 
-    logger.debug(f"Rendering home for {request.user.username}, login_type={login_type}")
+    # Fetch project-related notifications
+    user_projects = Project.objects.filter(team_members=request.user)
+    project_status_logs = ProjectStatusLog.objects.filter(project__in=user_projects).order_by('-changed_at')
+    project_notifications = [
+        {'message': f"Project '{log.project.title}' status changed from {log.old_status} to {log.new_status}", 'date': log.changed_at}
+        for log in project_status_logs
+    ]
+
+    meeting_notifications = Notification.objects.filter(user=request.user, message__contains="A meeting is scheduled").order_by('-created_at')
+    for notification in meeting_notifications:
+        # Clean up the message to remove HTML and extract only the link
+        message = notification.message
+        # Extract the link text between <a href='...' target='_blank'> and </a>
+        link_match = re.search(r"<a href='(.*?)' target='_blank'>(.*?)</a>", message)
+        if link_match:
+            link = link_match.group(2)  # Get the link text (e.g., https://meet.jit.si/sgHYEDIw1z)
+            # Remove the HTML part and keep the rest of the message
+            cleaned_message = re.sub(r"<a href='.*?' target='_blank'>.*?</a>", link, message)
+        else:
+            cleaned_message = message  # Fallback if no link is found
+        project_notifications.append({'message': cleaned_message, 'date': notification.created_at})
+
+    # Parse meeting notifications for the calendar
+    meetings = []
+    for notification in meeting_notifications:
+        message = notification.message
+        try:
+            date_str = message.split("on ")[1].split(" at ")[0]
+            time_str = message.split("at ")[1].split(" with ")[0]
+            link_start = message.index("href='") + 6
+            link_end = message.index("'", link_start)
+            link = message[link_start:link_end]
+            meetings.append({'date': date_str, 'time': time_str, 'link': link})
+        except (IndexError, ValueError) as e:
+            logger.warning(f"Could not parse meeting notification: {message}, error: {e}")
+
+    # Task deadlines for the calendar
+    task_deadlines = [
+        {'title': task.title, 'end_date': task.end_date.strftime('%Y-%m-%d')}
+        for task in tasks if task.end_date
+    ]
+
+    logger.debug(f"Rendering home for {request.user.username}, login_type={login_type}, meetings={meetings}, project_notifications={project_notifications}, task_deadlines={task_deadlines}")
     return render(request, 'app/home.html', {
         'user': request.user,
         'profile': profile,
-        'team_members_dict': team_members_dict,
+        'all_projects': all_projects,
+        'tasks': tasks,
         'urgent_tasks': urgent_tasks,
         'minor_tasks': minor_tasks,
         'pending_tasks': pending_tasks,
-        'login_type': login_type,
+        'team_members_dict': team_members_dict,
         'project_stages': project_stages,
+        'login_type': login_type,
+        'meetings': meetings,
+        'project_notifications': project_notifications,
+        'task_deadlines': task_deadlines
     })
 
-# Admin Home page (protected) - Admin landing page
 @login_required
 def admin_home(request):
     if request.session.get('login_type') != 'admin':
@@ -139,26 +172,26 @@ def admin_home(request):
     meeting_notifications = Notification.objects.filter(user=request.user, message__contains="A meeting is scheduled")
     meetings = []
     for notification in meeting_notifications:
-        # Parse the message to extract date, time, and link
-        # Expected format: "A meeting is scheduled on YYYY-MM-DD at HH:MM with agenda: [agenda]. Meeting link: <a href='[link]' target='_blank'>[link]</a>"
         message = notification.message
         try:
-            date_str = message.split("on ")[1].split(" at ")[0]  # e.g., "2025-03-07"
-            time_str = message.split("at ")[1].split(" with ")[0]  # e.g., "14:30"
+            date_str = message.split("on ")[1].split(" at ")[0]
+            time_str = message.split("at ")[1].split(" with ")[0]
             link_start = message.index("href='") + 6
             link_end = message.index("'", link_start)
-            link = message[link_start:link_end]  # e.g., "https://meet.jit.si/abc123"
-            meetings.append({
-                'date': date_str,
-                'time': time_str,
-                'link': link
-            })
+            link = message[link_start:link_end]
+            meetings.append({'date': date_str, 'time': time_str, 'link': link})
         except (IndexError, ValueError) as e:
             logger.warning(f"Could not parse meeting notification: {message}, error: {e}")
 
+    # Task deadlines for the calendar
+    task_deadlines = [
+        {'title': task.title, 'end_date': task.end_date.strftime('%Y-%m-%d')}
+        for task in tasks if task.end_date
+    ]
+
     login_type = request.session.get('login_type', 'employee')
 
-    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={login_type}, tasks={list(tasks.values('id', 'title', 'status'))}, team_members_dict={[(p.title, [u.username for u in users]) for p, users in team_members_dict.items()]}, meetings={meetings}")
+    logger.debug(f"Rendering admin_home for {request.user.username}, login_type={login_type}, tasks={list(tasks.values('id', 'title', 'status'))}, team_members_dict={[(p.title, [u.username for u in users]) for p, users in team_members_dict.items()]}, meetings={meetings}, task_deadlines={task_deadlines}")
     return render(request, 'app/adminhome.html', {
         'user': request.user,
         'profile': profile,
@@ -167,7 +200,8 @@ def admin_home(request):
         'tasks': tasks,
         'team_members_dict': team_members_dict,
         'login_type': login_type,
-        'meetings': meetings  # Pass meeting data to template
+        'meetings': meetings,
+        'task_deadlines': task_deadlines
     })
     
 # Logout user
