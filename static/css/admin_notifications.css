@@ -3,8 +3,13 @@ body {
     background: #f5f5f5;
     margin: 0;
     padding: 0;
-}
-
+      background-image: url("/static/images/bgadmin.jpg"); /* Replace with your image path */
+      background-attachment: fixed; /* Makes the background image stay fixed */
+      background-position: center; /* Centers the image */
+      background-repeat: no-repeat; /* Prevents image from repeating */
+      background-size: 1800px; /* Scales image to cover entire background */
+  }
+  
 #main {
     transition: margin-left 0.5s;
     padding: 20px;
@@ -144,7 +149,7 @@ header p {
 
 .notification-container h2 {
     font-size: 2rem;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 20px;
 }
 

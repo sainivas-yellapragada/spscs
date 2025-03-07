@@ -14,17 +14,27 @@ document.getElementById("menuToggle").addEventListener("click", () => {
   }
 });
 
-// Match Team and Project Updates height to Total Projects
+// Match Team and Project Updates height to the donut chart's bottom
 function matchSectionHeights() {
   const totalProjects = document.querySelector('.total-projects');
   const team = document.querySelector('.team');
   const projectUpdates = document.querySelector('.project-updates');
+  const chartCanvas = document.getElementById("totalProjectsChart");
+  const sectionHeading = totalProjects.querySelector('.section-heading');
 
-  const totalProjectsHeight = totalProjects.offsetHeight;
-  console.log("Total Projects Height:", totalProjectsHeight);
+  // Calculate height: chart height + heading height + padding
+  const chartHeight = chartCanvas.offsetHeight;
+  const headingHeight = sectionHeading.offsetHeight;
+  const padding = 40; // 20px top + 20px bottom padding from .total-projects
+  const adjustedHeight = chartHeight + headingHeight + padding;
 
-  team.style.height = `${totalProjectsHeight}px`;
-  projectUpdates.style.height = `${totalProjectsHeight}px`;
+  console.log("Chart Height:", chartHeight);
+  console.log("Heading Height:", headingHeight);
+  console.log("Adjusted Container Height:", adjustedHeight);
+
+  team.style.height = `${adjustedHeight}px`;
+  projectUpdates.style.height = `${adjustedHeight}px`;
+  totalProjects.style.height = `${adjustedHeight}px`; // Ensure total-projects matches too
 }
 
 // Calendar and Chart functionality
@@ -183,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadCalendar();
   loadTotalProjectsChart();
 
-  setTimeout(matchSectionHeights, 100);
+  setTimeout(matchSectionHeights, 100); // Delay to ensure chart is rendered
 });
 
 window.addEventListener('resize', matchSectionHeights);

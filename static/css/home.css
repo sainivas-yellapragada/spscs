@@ -3,8 +3,12 @@ body {
   background: #f5f5f5;
   margin: 0;
   padding: 0;
+    background-image: url("/static/images/bg2.jpg"); /* Replace with your image path */
+    background-attachment: fixed; /* Makes the background image stay fixed */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents image from repeating */
+    background-size: 1800px; /* Scales image to cover entire background */
 }
-
 #main {
   transition: margin-left 0.5s;
   padding: 20px;
@@ -26,12 +30,12 @@ header {
 
 header h1 {
   font-size: 2rem;
-  color: #333;
+  color: #ffffff;
 }
 
 header p {
   font-size: 1.2rem;
-  color: #666;
+  color: #ffffff;
 }
 
 /* Menu Button (Hamburger Icon) */
@@ -119,7 +123,7 @@ header p {
   margin-bottom: 40px;
   padding: 20px;
   border-radius: 12px;
-  background: #878787ad;
+  background: #424242ad;
 }
 
 /* Calendar and Tasks */
@@ -244,7 +248,7 @@ header p {
   justify-content: space-between;
   gap: 20px;
   padding: 20px;
-  background: #878787ad;
+  background: #424242ad;
 }
 
 .team, .project-updates, .total-projects {
@@ -253,18 +257,25 @@ header p {
   background: white;
   border-radius: 8px;
   text-align: center;
-  overflow-y: auto;
   box-sizing: border-box;
 }
 
 /* Team Section */
 .team {
   flex: 1;
+  overflow-y: auto; /* Add scroll if content overflows */
 }
 
-/* Project Updates with Sticky Title */
+/* Project Updates with Scrollable Notification List */
 .project-updates {
   flex: 1;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  text-align: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .project-updates .section-heading {
@@ -280,6 +291,24 @@ header p {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 150px; /* Reduced to fit smaller container height */
+  overflow-y: auto;
+  padding-right: 5px;
+  flex-grow: 1;
+}
+
+/* Scrollbar Styling */
+.project-updates .notification-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.project-updates .notification-list::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.project-updates .notification-list::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
 }
 
 .project-updates .notification-item {
@@ -292,11 +321,6 @@ header p {
   display: flex;
   flex-direction: column;
   gap: 5px;
-}
-
-.project-updates .notification-item a {
-  color: #00bfff;
-  text-decoration: underline;
 }
 
 .project-updates .notification-date {

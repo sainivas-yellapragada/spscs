@@ -1,11 +1,14 @@
 /* General Styles */
 body {
-  font-family: Arial, sans-serif;
   background: #f5f5f5;
   margin: 0;
   padding: 0;
+    background-image: url("/static/images/bgadmin.jpg"); /* Replace with your image path */
+    background-attachment: fixed; /* Makes the background image stay fixed */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents image from repeating */
+    background-size: 1800px; /* Scales image to cover entire background */
 }
-
 .container {
   max-width: 1200px;
   margin: auto;
@@ -19,12 +22,12 @@ header {
 
 header h1 {
   font-size: 2rem;
-  color: #333;
+  color: #ffffff;
 }
 
 header p {
   font-size: 1.2rem;
-  color: #666;
+  color: #ffffff;
 }
 
 /* Menu Button (Hamburger Icon) */

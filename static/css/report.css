@@ -1,8 +1,15 @@
 /* General Styles */
 body {
+    background: #f5f5f5;
     margin: 0;
-    transition: margin-left 0.5s ease;
-}
+    padding: 0;
+      background-image: url("/static/images/bg2.jpg"); /* Replace with your image path */
+      background-attachment: fixed; /* Makes the background image stay fixed */
+      background-position: center; /* Centers the image */
+      background-repeat: no-repeat; /* Prevents image from repeating */
+      background-size: 1800px; /* Scales image to cover entire background */
+  }
+  
 
 /* Sidebar Styles */
 .sidebar {
@@ -22,7 +29,7 @@ body {
     padding: 8px 8px 8px 32px;
     text-decoration: none;
     font-size: 25px;
-    color: white;
+    color: #818181;
     display: block;
     transition: 0.3s;
 }
@@ -57,7 +64,7 @@ body {
     top: 20px;
     left: 20px;
     z-index: 1100;
-    color: rgb(255, 238, 0);
+    color: rgb(255, 200, 2);
     background: none;
     border: none;
 }
@@ -76,6 +83,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    color: white;
 }
 
 /* Circle Section */
@@ -94,7 +102,7 @@ body {
     margin-bottom: 10px;
     font-size: 18px;
     font-weight: bold;
-    color: #333;
+    color: #fff;
 }
 
 /* Circle Styling */
@@ -118,7 +126,7 @@ svg {
     position: absolute;
     font-size: 22px;
     font-weight: bold;
-    color: black;
+    color: rgb(255, 249, 249);
     margin: 0; /* Remove default margins */
     top: 50%; /* Center vertically */
     left: 50%; /* Center horizontally */
