@@ -349,8 +349,16 @@ def create_project(request):
         project.team_members.set(User.objects.filter(id__in=team_member_ids))
 
         messages.success(request, "Project created successfully.")
+        # Redirect based on login_type
+        login_type = request.session.get('login_type', 'employee')
+        if login_type == 'admin':
+            return redirect('admin_projects')
         return redirect('projects')
 
+    # For non-POST requests, redirect based on login_type
+    login_type = request.session.get('login_type', 'employee')
+    if login_type == 'admin':
+        return redirect('admin_projects')
     return redirect('projects')
 
 @login_required
