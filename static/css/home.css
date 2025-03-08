@@ -7,7 +7,7 @@ body {
     background-attachment: fixed; /* Makes the background image stay fixed */
     background-position: center; /* Centers the image */
     background-repeat: no-repeat; /* Prevents image from repeating */
-    background-size: 1800px; /* Scales image to cover entire background */
+    background-size: 1900px; /* Scales image to cover entire background */
 }
 #main {
   transition: margin-left 0.5s;

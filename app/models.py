@@ -1,3 +1,4 @@
+# models.py
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
@@ -88,6 +89,7 @@ class Notification(models.Model):
     link = models.URLField(null=True, blank=True)  # Optional: Store the meeting link separately
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
+    sent_sms = models.BooleanField(default=False)  # Added to track SMS sending
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.message[:50]}"

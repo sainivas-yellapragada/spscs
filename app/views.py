@@ -12,15 +12,62 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
 from datetime import date, timedelta
+from datetime import datetime
 from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 import random
 import string
 import re
+import requests
 
 logger = logging.getLogger(__name__)
 
-# Custom login page
+def send_sms(phone_numbers, message):
+    """
+    Send SMS to a list of phone numbers using Fast2SMS API.
+    :param phone_numbers: List of phone numbers (strings)
+    :param message: The message content to send
+    """
+    logger.debug(f"Attempting to send SMS with phone_numbers={phone_numbers}, message={message}")
+    url = "https://www.fast2sms.com/dev/bulkV2"
+    
+    if isinstance(phone_numbers, list):
+        cleaned_numbers = [num.replace('+91', '') if num.startswith('+91') else num for num in phone_numbers]
+        numbers = ",".join(cleaned_numbers)
+    else:
+        numbers = phone_numbers.replace('+91', '') if phone_numbers.startswith('+91') else phone_numbers
+
+    if not numbers:
+        logger.warning("No phone numbers provided for SMS sending.")
+        return
+
+    params = {
+        "authorization": "WFX6R8IZieoIhGrGUQXV0uSHkgqW57QMBmBxWrbIBr9zp1pOslU6lI4d0oCW",
+        "route": "q",
+        "message": message,
+        "numbers": numbers,
+        "flash": "0",
+    }
+
+    headers = {
+        "cache-control": "no-cache"
+    }
+
+    try:
+        response = requests.get(url, params=params, headers=headers)
+        response_data = response.json()
+        logger.debug(f"Fast2SMS API response: {response_data}")
+        if response_data.get("return", False):
+            logger.debug(f"SMS sent successfully to {numbers}: {message}")
+        else:
+            logger.error(f"Failed to send SMS to {numbers}: {response_data.get('message', 'Unknown error')}")
+    except Exception as e:
+        logger.error(f"Error sending SMS to {numbers}: {str(e)}")
+
+def generate_jitsi_link():
+    room_name = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+    return f"https://meet.jit.si/{room_name}"
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -48,7 +95,6 @@ def login_view(request):
     logger.debug(f"Login page GET: login_type={login_type}, session={request.session['login_type']}")
     return render(request, 'app/login.html')
 
-# Home page (protected) - Employee landing page
 @login_required
 def home(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -56,12 +102,10 @@ def home(request):
     tasks = Task.objects.filter(assigned_to=request.user)
     today = date.today()
 
-    # Categorize tasks
     urgent_tasks = tasks.filter(end_date__lte=today, status__in=['DOING', 'UNFINISHED'])
     minor_tasks = tasks.filter(end_date__gt=today, status__in=['DOING', 'UNFINISHED'])
     pending_tasks = tasks.filter(status='ON_HOLD')
 
-    # Team members and their projects
     team_members_dict = {}
     for task in tasks:
         for user in task.assigned_to.all():
@@ -69,7 +113,6 @@ def home(request):
                 team_members_dict[user] = set()
             team_members_dict[user].add(task.project.title)
 
-    # Project stages for chart
     project_stages = {
         "Planning": all_projects.filter(status="Planning").count(),
         "Design": all_projects.filter(status="Design").count(),
@@ -79,7 +122,6 @@ def home(request):
 
     login_type = request.session.get('login_type', 'employee')
 
-    # Fetch project-related notifications
     user_projects = Project.objects.filter(team_members=request.user)
     project_status_logs = ProjectStatusLog.objects.filter(project__in=user_projects).order_by('-changed_at')
     project_notifications = [
@@ -89,19 +131,15 @@ def home(request):
 
     meeting_notifications = Notification.objects.filter(user=request.user, message__contains="A meeting is scheduled").order_by('-created_at')
     for notification in meeting_notifications:
-        # Clean up the message to remove HTML and extract only the link
         message = notification.message
-        # Extract the link text between <a href='...' target='_blank'> and </a>
         link_match = re.search(r"<a href='(.*?)' target='_blank'>(.*?)</a>", message)
         if link_match:
-            link = link_match.group(2)  # Get the link text (e.g., https://meet.jit.si/sgHYEDIw1z)
-            # Remove the HTML part and keep the rest of the message
+            link = link_match.group(2)
             cleaned_message = re.sub(r"<a href='.*?' target='_blank'>.*?</a>", link, message)
         else:
-            cleaned_message = message  # Fallback if no link is found
+            cleaned_message = message
         project_notifications.append({'message': cleaned_message, 'date': notification.created_at})
 
-    # Parse meeting notifications for the calendar
     meetings = []
     for notification in meeting_notifications:
         message = notification.message
@@ -115,7 +153,6 @@ def home(request):
         except (IndexError, ValueError) as e:
             logger.warning(f"Could not parse meeting notification: {message}, error: {e}")
 
-    # Task deadlines for the calendar
     task_deadlines = [
         {'title': task.title, 'end_date': task.end_date.strftime('%Y-%m-%d')}
         for task in tasks if task.end_date
@@ -168,7 +205,6 @@ def admin_home(request):
         for user in task.assigned_to.all():
             team_members_dict[project].add(user)
 
-    # Fetch meeting notifications for the current user
     meeting_notifications = Notification.objects.filter(user=request.user, message__contains="A meeting is scheduled")
     meetings = []
     for notification in meeting_notifications:
@@ -183,7 +219,6 @@ def admin_home(request):
         except (IndexError, ValueError) as e:
             logger.warning(f"Could not parse meeting notification: {message}, error: {e}")
 
-    # Task deadlines for the calendar
     task_deadlines = [
         {'title': task.title, 'end_date': task.end_date.strftime('%Y-%m-%d')}
         for task in tasks if task.end_date
@@ -204,14 +239,12 @@ def admin_home(request):
         'task_deadlines': task_deadlines
     })
     
-# Logout user
 def logout_view(request):
     logger.debug(f"Logging out user {request.user.username}")
     logout(request)
     request.session.pop('login_type', None)
     return redirect('login_view')
 
-# User registration (Manual)
 def manual_register(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -239,7 +272,6 @@ def manual_register(request):
 
     return redirect('account_signup')
 
-# Signal: Populate Profile after Social Signup
 @receiver(user_signed_up)
 def populate_profile_on_signup(request, sociallogin=None, **kwargs):
     user = kwargs['user']
@@ -265,7 +297,6 @@ def populate_profile_on_signup(request, sociallogin=None, **kwargs):
 
         profile.save()
 
-# Custom redirect handler for social logins
 def social_login_redirect(request):
     if request.user.is_authenticated:
         login_type = request.session.get('login_type', 'employee')
@@ -329,7 +360,7 @@ def admin_projects(request):
         return redirect('home')
     
     profile = Profile.objects.get_or_create(user=request.user)[0]
-    projects = Project.objects.all()  # Admin sees all projects
+    projects = Project.objects.all()
     login_type = request.session.get('login_type', 'employee')
     
     return render(request, 'app/admin_projects.html', {
@@ -349,13 +380,11 @@ def create_project(request):
         project.team_members.set(User.objects.filter(id__in=team_member_ids))
 
         messages.success(request, "Project created successfully.")
-        # Redirect based on login_type
         login_type = request.session.get('login_type', 'employee')
         if login_type == 'admin':
             return redirect('admin_projects')
         return redirect('projects')
 
-    # For non-POST requests, redirect based on login_type
     login_type = request.session.get('login_type', 'employee')
     if login_type == 'admin':
         return redirect('admin_projects')
@@ -452,6 +481,8 @@ def admin_tasks(request):
         'login_type': login_type
     })
 
+from datetime import datetime  # Add this import
+
 @login_required
 def create_task(request):
     if request.session.get('login_type') != 'admin':
@@ -467,17 +498,43 @@ def create_task(request):
 
         logger.debug(f"Creating task: title={title}, project_id={project_id}, assigned_to_ids={assigned_to_ids}, start_date={start_date}, end_date={end_date}, status={status}")
 
+        # Convert string dates to date objects
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError as e:
+            logger.error(f"Invalid date format: start_date={start_date}, end_date={end_date}, error={str(e)}")
+            messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
+            return redirect('admin_tasks')
+
         project = Project.objects.get(id=project_id)
         task = Task.objects.create(
             title=title,
             project=project,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=start_date_obj,  # Use parsed date object
+            end_date=end_date_obj,      # Use parsed date object
             status=status if status in ['ON_HOLD', 'UNFINISHED'] else 'UNFINISHED'
         )
         if assigned_to_ids:
             task.assigned_to.set(User.objects.filter(id__in=assigned_to_ids))
             logger.debug(f"Task assigned to users: {task.assigned_to.all()}")
+            
+            today = date.today()
+            days_until_deadline = (task.end_date - today).days
+            if days_until_deadline in [1, 2]:
+                sms_message = f"Task '{task.title}' deadline in {days_until_deadline} day{'s' if days_until_deadline > 1 else ''}!"
+                for user in task.assigned_to.all():
+                    notification, created = Notification.objects.get_or_create(
+                        user=user,
+                        message=sms_message,
+                        defaults={'sent_sms': False}
+                    )
+                    if created:
+                        profile = Profile.objects.filter(user=user).first()
+                        if profile and profile.phone:
+                            send_sms([profile.phone], sms_message)
+                            notification.sent_sms = True
+                            notification.save()
         else:
             logger.warning("No users assigned to the task!")
         
@@ -516,7 +573,7 @@ def canvas(request):
     return render(request, 'app/canvas.html', {'login_type': login_type})
 
 def get_users(request):
-    query = request.GET.get('q', '')  # Use 'q' to match the JavaScript
+    query = request.GET.get('q', '')
     if query:
         users = User.objects.filter(username__icontains=query).values("id", "username")[:5]
     else:
@@ -633,15 +690,11 @@ def report(request):
 
 @login_required
 def admin_report(request):
-    # Ensure only admins can access this view (optional check)
     login_type = request.session.get('login_type', 'employee')
     if login_type != 'admin':
         return HttpResponse("Unauthorized access", status=403)
 
-    # Get the profile for the logged-in user
     profile = Profile.objects.get_or_create(user=request.user)[0]
-
-    # Get ALL projects and tasks (not limited to the current user)
     all_projects = Project.objects.all()
     total_projects = all_projects.count()
     completed_projects = all_projects.filter(status='Completed').count()
@@ -650,14 +703,12 @@ def admin_report(request):
     total_tasks = all_tasks.count()
     closed_tasks = all_tasks.filter(status='DONE').count()
 
-    # Calculate progress for the circular charts
     projects_progress = (total_projects / 100) * 100 if total_projects > 0 else 0
     projects_offset = 377 - (377 * (projects_progress / 100))
 
     tasks_progress = (closed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
     tasks_offset = 377 - (377 * (tasks_progress / 100))
 
-    # Prepare project summaries for all projects
     project_summaries = []
     progress_map = {
         'Planning': 25,
@@ -666,7 +717,6 @@ def admin_report(request):
     }
     for project in all_projects:
         progress = progress_map.get(project.status, 0)
-        # Assuming project has a manager field; adjust if necessary
         manager = project.manager if hasattr(project, 'manager') else None
         project_summaries.append({
             'name': project.title,
@@ -676,9 +726,8 @@ def admin_report(request):
             'progress': progress
         })
 
-    # Handle PDF download
     if request.method == "POST" and 'download_pdf' in request.POST:
-        pdf_template = 'app/admin_report_pdf.html'  # Adjust if you have a separate PDF template
+        pdf_template = 'app/admin_report_pdf.html'
         context = {
             'user': request.user,
             'total_projects': total_projects,
@@ -696,7 +745,6 @@ def admin_report(request):
             return HttpResponse('PDF generation failed', status=500)
         return response
 
-    # Render the admin report page
     return render(request, 'app/admin_report.html', {
         'profile': profile,
         'login_type': login_type,
@@ -715,20 +763,29 @@ def notifications(request):
     login_type = request.session.get('login_type', 'employee')
     today = date.today()
 
-    # Task deadline notifications
     user_tasks = Task.objects.filter(assigned_to=request.user)
     deadline_notifications = []
+
     for task in user_tasks:
         if task.status != 'DONE':
             days_until_deadline = (task.end_date - today).days
-            if 0 <= days_until_deadline <= 2:
+            if days_until_deadline in [1, 2]:
+                sms_message = f"Task '{task.title}' deadline in {days_until_deadline} day{'s' if days_until_deadline > 1 else ''}!"
+                notification, created = Notification.objects.get_or_create(
+                    user=request.user,
+                    message=sms_message,
+                    defaults={'sent_sms': False}
+                )
+                if created and profile.phone:
+                    send_sms([profile.phone], sms_message)
+                    notification.sent_sms = True
+                    notification.save()
                 deadline_notifications.append({
                     'task_title': task.title,
                     'days_left': days_until_deadline,
                     'end_date': task.end_date
                 })
 
-    # Project status change notifications
     user_projects = Project.objects.filter(team_members=request.user)
     project_notifications = []
     recent_logs = ProjectStatusLog.objects.filter(
@@ -736,33 +793,30 @@ def notifications(request):
         changed_at__gte=today - timedelta(days=7)
     )
     for log in recent_logs:
+        message = f"Project '{log.project.title}' moved from {log.old_status} to {log.new_status}."
         project_notifications.append({
             'project_title': log.project.title,
             'old_status': log.old_status,
             'new_status': log.new_status,
             'updated_at': log.changed_at
         })
+        Notification.objects.get_or_create(
+            user=request.user,
+            message=message,
+            defaults={'created_at': log.changed_at}
+        )
 
-    # Meeting notifications from Notification model
     meeting_notifications = Notification.objects.filter(user=request.user, read=False).order_by('-created_at')
 
-    # Combine all notifications into a single list
     notifications_list = []
-
-    # Add task deadline notifications
     for dn in deadline_notifications:
-        if dn['days_left'] == 0:
-            message = f"Task '{dn['task_title']}' deadline is today!"
-        else:
-            message = f"Task '{dn['task_title']}' deadline in {dn['days_left']} day{'s' if dn['days_left'] > 1 else ''}!"
+        message = f"Task '{dn['task_title']}' deadline in {dn['days_left']} day{'s' if dn['days_left'] > 1 else ''}!"
         notifications_list.append({'message': message, 'date': dn['end_date']})
 
-    # Add project status change notifications
     for pn in project_notifications:
         message = f"Project '{pn['project_title']}' moved from {pn['old_status']} to {pn['new_status']}."
         notifications_list.append({'message': message, 'date': pn['updated_at']})
 
-    # Add meeting notifications
     for notification in meeting_notifications:
         notifications_list.append({'message': notification.message, 'date': notification.created_at})
 
@@ -782,20 +836,32 @@ def admin_notifications(request):
     login_type = request.session.get('login_type', 'employee')
     today = date.today()
 
-    # Task deadline notifications (all tasks)
     all_tasks = Task.objects.all()
     task_notifications = []
+
     for task in all_tasks:
         if task.status != 'DONE':
             days_until_deadline = (task.end_date - today).days
-            if 0 <= days_until_deadline <= 2:
+            if days_until_deadline in [1, 2]:
+                sms_message = f"Task '{task.title}' deadline in {days_until_deadline} day{'s' if days_until_deadline > 1 else ''}!"
+                for user in task.assigned_to.all():
+                    notification, created = Notification.objects.get_or_create(
+                        user=user,
+                        message=sms_message,
+                        defaults={'sent_sms': False}
+                    )
+                    if created:
+                        profile = Profile.objects.filter(user=user).first()
+                        if profile and profile.phone:
+                            send_sms([profile.phone], sms_message)
+                            notification.sent_sms = True
+                            notification.save()
                 task_notifications.append({
                     'task_title': task.title,
                     'days_left': days_until_deadline,
                     'end_date': task.end_date
                 })
 
-    # Project status change notifications (all projects) + meeting notifications
     all_projects = Project.objects.all()
     project_notifications = []
     recent_logs = ProjectStatusLog.objects.filter(
@@ -803,14 +869,20 @@ def admin_notifications(request):
         changed_at__gte=today - timedelta(days=7)
     )
     for log in recent_logs:
+        message = f"Project '{log.project.title}' moved from {log.old_status} to {log.new_status}."
         project_notifications.append({
             'project_title': log.project.title,
             'old_status': log.old_status,
             'new_status': log.new_status,
             'updated_at': log.changed_at
         })
+        for user in log.project.team_members.all():
+            Notification.objects.get_or_create(
+                user=user,
+                message=message,
+                defaults={'created_at': log.changed_at}
+            )
 
-    # Add meeting notifications to project notifications for admin
     meeting_notifications = Notification.objects.filter(user=request.user, read=False).order_by('-created_at')
     for notification in meeting_notifications:
         project_notifications.append({
@@ -818,13 +890,9 @@ def admin_notifications(request):
             'date': notification.created_at
         })
 
-    # Prepare notifications for template
     task_notifications_list = []
     for tn in task_notifications:
-        if tn['days_left'] == 0:
-            message = f"Task '{tn['task_title']}' deadline is today!"
-        else:
-            message = f"Task '{tn['task_title']}' deadline in {tn['days_left']} day{'s' if tn['days_left'] > 1 else ''}!"
+        message = f"Task '{tn['task_title']}' deadline in {tn['days_left']} day{'s' if tn['days_left'] > 1 else ''}!"
         task_notifications_list.append({'message': message, 'date': tn['end_date']})
 
     project_notifications_list = []
@@ -841,7 +909,7 @@ def admin_notifications(request):
         'task_notifications': task_notifications_list,
         'project_notifications': project_notifications_list,
     })
-    
+
 @login_required
 def schedule_meeting(request):
     if request.session.get('login_type') != 'admin':
@@ -853,15 +921,12 @@ def schedule_meeting(request):
         agenda = request.POST.get('agenda')
         users_input = request.POST.get('users', '').strip()
 
-        # Generate unique Jitsi meeting link
         meeting_link = generate_jitsi_link()
-
-        # Format the notification message with clickable link
         meeting_date = meeting_datetime.split('T')[0]
         meeting_time = meeting_datetime.split('T')[1]
-        message = f"A meeting is scheduled on {meeting_date} at {meeting_time} with agenda: {agenda}. Meeting link: <a href='{meeting_link}' target='_blank'>{meeting_link}</a>"
+        in_app_message = f"A meeting is scheduled on {meeting_date} at {meeting_time} with agenda: {agenda}. Meeting link: <a href='{meeting_link}' target='_blank'>{meeting_link}</a>"
+        sms_message = f"A meeting is scheduled on {meeting_date} at {meeting_time}. Agenda: {agenda}. Join: {meeting_link}"
 
-        # Determine recipients, including the admin
         admin_user = request.user
         if users_input:
             usernames = [u.strip() for u in users_input.split(',') if u.strip()]
@@ -875,16 +940,21 @@ def schedule_meeting(request):
             if admin_user not in recipients:
                 recipients.append(admin_user)
 
-        # Save notifications to the database
         for user in recipients:
-            Notification.objects.create(user=user, message=message)
-            logger.debug(f"Notification saved for {user.username}: {message}")
+            notification, created = Notification.objects.get_or_create(
+                user=user,
+                message=in_app_message,
+                defaults={'sent_sms': False}
+            )
+            if created:
+                logger.debug(f"Notification saved for {user.username}: {in_app_message}")
+                profile = Profile.objects.filter(user=user).first()
+                if profile and profile.phone:
+                    send_sms([profile.phone], sms_message)
+                    notification.sent_sms = True
+                    notification.save()
 
         messages.success(request, "Meeting scheduled and notifications sent!")
         return redirect('admin_notifications')
 
     return redirect('admin_notifications')
-# Function to generate unique Jitsi meeting link (moved to bottom)
-def generate_jitsi_link():
-    room_name = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-    return f"https://meet.jit.si/{room_name}"
