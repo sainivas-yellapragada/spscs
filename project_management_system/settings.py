@@ -76,14 +76,25 @@ WSGI_APPLICATION = 'project_management_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.mysql',
+#        'NAME': 'project_mgmt_system',
+#        'USER': 'root',
+#        'PASSWORD': 'root',
+#        'HOST': 'localhost',
+#        'PORT': '3306',
+#    }
+#}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'project_mgmt_system',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'DiVbYKGrGUiXDalllRtTwdBNHaeeUdAf',
+        'HOST': 'turntable.proxy.rlwy.net',
+        'PORT': '54600',
     }
 }
 
