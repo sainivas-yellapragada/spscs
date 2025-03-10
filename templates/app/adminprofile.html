@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile</title>
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu">
+            <a href="{% url 'admin_home' %}">Home</a>
+            <a href="{% url 'admin_tasks' %}">Tasks</a>
+            <a href="{% url 'admin_projects' %}">Projects</a>
+            <a href="{% url 'admin_report' %}">Report</a>
+            <a href="{% url 'admin_notifications' %}">Notifications</a>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <br><br>
+            <div class="profile" id="profile">
+                <a href="{% url 'admin_profile' %}">
+                    <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
+                </a>
+            </div>
+        </div>
+
+        <!-- Logout Button -->
+        <form action="{% url 'account_logout' %}" method="post" class="sidebar-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="main">
+        <span class="menu-btn" id="menuToggle">☰</span>
+        <div class="profile-page">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img src="{{ profile.profile_picture|default:'/static/images/profile.png' }}" alt="Profile Picture">
+                </div>
+                <h1 class="profile-title" style="color: white;">
+                    Welcome, {{ user.first_name|default:user.username }} (Admin)
+                </h1>
+            </div>
+
+            <div class="profile-container">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="first_name" value="{{ user.first_name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="last_name" value="{{ user.last_name }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="gender" value="Male" {% if profile.gender == 'Male' %}checked{% endif %}> Male</label>
+                                <label><input type="radio" name="gender" value="Female" {% if profile.gender == 'Female' %}checked{% endif %}> Female</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <select id="country" name="country">
+                                <option value="IN" {% if profile.country == "IN" or not profile.country %}selected{% endif %}>India</option>
+                                <option value="US" {% if profile.country == "US" %}selected{% endif %}>United States</option>
+                                <option value="UK" {% if profile.country == "UK" %}selected{% endif %}>United Kingdom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="language">Language</label>
+                            <input type="text" id="language" name="language" value="{{ profile.language|default:'English' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <div class="phone-group">
+                                <label for="countryCode">Country Code</label>
+                                <select id="countryCode" name="country_code">
+                                    <option value="+91" {% if profile.phone and profile.phone|slice:":3" == "+91" %}selected{% endif %}>+91 (India)</option>
+                                    <option value="+1" {% if profile.phone and profile.phone|slice:":2" == "+1" %}selected{% endif %}>+1 (USA)</option>
+                                    <option value="+44" {% if profile.phone and profile.phone|slice:":3" == "+44" %}selected{% endif %}>+44 (UK)</option>
+                                </select>
+
+                                <label for="phone">Phone Number</label>
+                                <input type="text" id="phone" name="phone_number" 
+                                       value="{{ profile.phone|slice:'3:'|default:'' }}" 
+                                       maxlength="10" placeholder="Enter 10-digit phone number">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-container">
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Sidebar --> 
+    <script src="{% static 'js/adminprofile.js' %}"></script>
+</body>
+</html>

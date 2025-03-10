@@ -303,7 +303,7 @@ header p {
 }
 
 .project-updates .notification-list::-webkit-scrollbar-thumb {
-  background-color: #888;
+  background-color: #454545;
   border-radius: 4px;
 }
 
@@ -312,7 +312,7 @@ header p {
 }
 
 .project-updates .notification-item {
-  background-color: #f5f5f5;
+  background-color: #8f8f8faa;
   padding: 10px;
   border-radius: 5px;
   text-align: left;

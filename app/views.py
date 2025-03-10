@@ -329,16 +329,21 @@ def profile_page(request):
         profile.phone = f"{country_code}{phone_number}" if country_code and phone_number else None
         profile.save()
 
+        # Redirect based on login_type
+        if login_type == 'admin':
+            return redirect('admin_profile_page')
         return redirect('profile_page')
 
-    return render(request, 'app/profile.html', {
+    # Render the appropriate template based on login_type
+    template = 'app/adminprofile.html' if login_type == 'admin' else 'app/profile.html'
+    return render(request, template, {
         'profile': profile,
         'user': user,
         'default_country_code': country_code,
         'phone_number': phone_number,
         'login_type': login_type
-    })
-
+    }) 
+    
 @login_required
 def projects(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -412,6 +417,9 @@ def delete_project(request, project_id):
     project = Project.objects.get(id=project_id)
     project.delete()
     messages.success(request, "Project deleted successfully.")
+    login_type = request.session.get('login_type', 'employee')
+    if login_type == 'admin':
+        return redirect('admin_projects')
     return redirect('projects')
 
 @login_required
@@ -727,7 +735,7 @@ def admin_report(request):
         })
 
     if request.method == "POST" and 'download_pdf' in request.POST:
-        pdf_template = 'app/admin_report_pdf.html'
+        pdf_template = 'app/report_pdf.html'
         context = {
             'user': request.user,
             'total_projects': total_projects,

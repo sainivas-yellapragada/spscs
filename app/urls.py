@@ -31,4 +31,5 @@ urlpatterns = [
     path('notifications/', login_required(views.notifications), name="notifications"),
     path('admin_notifications/', login_required(views.admin_notifications), name="admin_notifications"),
     path('schedule_meeting/', views.schedule_meeting, name='schedule_meeting'),
+    path('admin-profile/', login_required(views.profile_page), name='admin_profile'),
 ]
