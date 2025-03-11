@@ -1,52 +1,54 @@
 console.log("home.js loaded");
 
-// Toggle sidebar open/close
-document.getElementById("menuToggle").addEventListener("click", () => {
-  const sidebar = document.getElementById("sidebar");
-  const main = document.getElementById("main");
-
-  if (sidebar.style.width === "250px") {
-    sidebar.style.width = "0";
-    main.style.marginLeft = "0";
-  } else {
-    sidebar.style.width = "250px";
-    main.style.marginLeft = "250px";
-  }
-});
-
-// Match Team and Project Updates height to the donut chart's bottom
-function matchSectionHeights() {
-  const totalProjects = document.querySelector('.total-projects');
-  const team = document.querySelector('.team');
-  const projectUpdates = document.querySelector('.project-updates');
-  const chartCanvas = document.getElementById("totalProjectsChart");
-  const sectionHeading = totalProjects.querySelector('.section-heading');
-
-  // Calculate height: chart height + heading height + padding
-  const chartHeight = chartCanvas.offsetHeight;
-  const headingHeight = sectionHeading.offsetHeight;
-  const padding = 40; // 20px top + 20px bottom padding from .total-projects
-  const adjustedHeight = chartHeight + headingHeight + padding;
-
-  console.log("Chart Height:", chartHeight);
-  console.log("Heading Height:", headingHeight);
-  console.log("Adjusted Container Height:", adjustedHeight);
-
-  team.style.height = `${adjustedHeight}px`;
-  projectUpdates.style.height = `${adjustedHeight}px`;
-  totalProjects.style.height = `${adjustedHeight}px`; // Ensure total-projects matches too
-}
-
 // Calendar and Chart functionality
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM fully loaded");
 
-  let menuToggle = document.getElementById("menuToggle");
-  let sidebar = document.getElementById("sidebar");
+  // Toggle sidebar open/close
+  const menuToggle = document.getElementById("menuToggle");
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
 
-  menuToggle.addEventListener("click", function () {
-    sidebar.classList.toggle("open");
-  });
+  if (menuToggle && sidebar && main) {
+    menuToggle.addEventListener("click", () => {
+      if (sidebar.style.width === "250px") {
+        sidebar.style.width = "0";
+        main.style.marginLeft = "0";
+      } else {
+        sidebar.style.width = "250px";
+        main.style.marginLeft = "250px";
+      }
+    });
+  } else {
+    console.error("Menu toggle, sidebar, or main element not found");
+  }
+
+  // Match Team and Project Updates height to the donut chart's bottom
+  function matchSectionHeights() {
+    const totalProjects = document.querySelector(".total-projects");
+    const team = document.querySelector(".team");
+    const projectUpdates = document.querySelector(".project-updates");
+    const chartCanvas = document.getElementById("totalProjectsChart");
+    const sectionHeading = totalProjects?.querySelector(".section-heading");
+
+    if (!totalProjects || !team || !projectUpdates || !chartCanvas || !sectionHeading) {
+      console.warn("One or more elements for height matching not found");
+      return;
+    }
+
+    const chartHeight = chartCanvas.offsetHeight;
+    const headingHeight = sectionHeading.offsetHeight;
+    const padding = 40; // 20px top + 20px bottom padding from .total-projects
+    const adjustedHeight = chartHeight + headingHeight + padding;
+
+    console.log("Chart Height:", chartHeight);
+    console.log("Heading Height:", headingHeight);
+    console.log("Adjusted Container Height:", adjustedHeight);
+
+    team.style.height = `${adjustedHeight}px`;
+    projectUpdates.style.height = `${adjustedHeight}px`;
+    totalProjects.style.height = `${adjustedHeight}px`;
+  }
 
   // Load Calendar
   function loadCalendar() {
@@ -66,8 +68,8 @@ document.addEventListener("DOMContentLoaded", function () {
       row.appendChild(document.createElement("td"));
     }
 
-    const meetings = typeof meetingsData !== 'undefined' ? meetingsData : [];
-    const taskDeadlines = typeof taskDeadlinesData !== 'undefined' ? taskDeadlinesData : [];
+    const meetings = typeof meetingsData !== "undefined" ? meetingsData : [];
+    const taskDeadlines = typeof taskDeadlinesData !== "undefined" ? taskDeadlinesData : [];
     console.log("Meetings data received:", meetings);
     console.log("Task deadlines data received:", taskDeadlines);
 
@@ -75,10 +77,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const dayCell = document.createElement("td");
       dayCell.textContent = day;
 
-      const currentDate = `${year}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const currentDate = `${year}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
       // Meetings
-      const meeting = meetings.find(m => m.date === currentDate);
+      const meeting = meetings.find((m) => m.date === currentDate);
       if (meeting) {
         console.log(`Meeting found on ${currentDate}:`, meeting);
         dayCell.classList.add("has-meeting");
@@ -93,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Task Deadlines
-      const deadline = taskDeadlines.find(t => t.end_date === currentDate);
+      const deadline = taskDeadlines.find((t) => t.end_date === currentDate);
       if (deadline) {
         console.log(`Task deadline found on ${currentDate}:`, deadline);
         dayCell.classList.add("has-deadline");
@@ -133,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const projectStagesData = document.getElementById("project-stages");
       if (!projectStagesData) {
-        throw new Error("Project stages data element not found");
+        throw new Error("Project stages data element not found in DOM");
       }
       console.log("Raw project stages data:", projectStagesData.textContent);
       const projectStages = JSON.parse(projectStagesData.textContent);
@@ -142,7 +144,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const stages = ["Planning", "Design", "Building", "Testing"];
       const colors = ["#6c757d", "#fd7e14", "#28a745", "#007bff"];
 
+      // Custom legend
       const legendContainer = document.getElementById("project-legend");
+      if (!legendContainer) {
+        throw new Error("Legend container not found");
+      }
+      legendContainer.innerHTML = ""; // Clear existing legend
       stages.forEach((stage, index) => {
         const legendItem = document.createElement("div");
         legendItem.className = "legend-item";
@@ -152,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
         colorBox.style.backgroundColor = colors[index];
 
         const label = document.createElement("span");
-        label.textContent = `${stage}: ${projectStages[stage]}`;
+        label.textContent = `${stage}: ${projectStages[stage] || 0}`; // Default to 0 if undefined
 
         legendItem.appendChild(colorBox);
         legendItem.appendChild(label);
@@ -160,40 +167,50 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       const ctx = document.getElementById("totalProjectsChart").getContext("2d");
+      if (!ctx) {
+        throw new Error("Chart canvas context not available");
+      }
       new Chart(ctx, {
         type: "doughnut",
         data: {
           labels: stages,
-          datasets: [{
-            data: [
-              projectStages["Planning"],
-              projectStages["Design"],
-              projectStages["Building"],
-              projectStages["Testing"]
-            ],
-            backgroundColor: colors,
-            borderWidth: 1
-          }]
+          datasets: [
+            {
+              data: [
+                projectStages["Planning"] || 0,
+                projectStages["Design"] || 0,
+                projectStages["Building"] || 0,
+                projectStages["Testing"] || 0,
+              ],
+              backgroundColor: colors,
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false
-            }
-          }
-        }
+              display: false, // Use custom legend instead
+            },
+          },
+        },
       });
     } catch (error) {
       console.error("Error loading chart:", error);
     }
   }
 
+  // Initialize components
   loadCalendar();
   loadTotalProjectsChart();
 
-  setTimeout(matchSectionHeights, 100); // Delay to ensure chart is rendered
+  // Delay height matching to ensure chart is rendered
+  setTimeout(matchSectionHeights, 100);
 });
 
-window.addEventListener('resize', matchSectionHeights);
+// Handle window resize
+window.addEventListener("resize", () => {
+  setTimeout(matchSectionHeights, 100); // Delay to account for resize rendering
+});
