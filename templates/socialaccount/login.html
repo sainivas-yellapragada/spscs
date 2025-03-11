@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load allauth %}
+{% load static %}
+
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <!-- Social Account Logo -->
+        {% if provider.id == 'google' %}
+            <img src="https://www.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="Google Logo" class="social-logo">
+        {% elif provider.id == 'github' %}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub Logo" class="social-logo">
+        {% elif provider.id == 'linkedin' %}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn Logo" class="social-logo">
+        {% endif %}
+
+        {% if process == "connect" %}
+            <h1>{% blocktrans with provider.name as provider %}Connect {{ provider }}{% endblocktrans %}</h1>
+            <p>{% blocktrans with provider.name as provider %}You are about to connect a new third-party account from {{ provider }}.{% endblocktrans %}</p>
+        {% else %}
+            <h1>{% blocktrans with provider.name as provider %}Sign In Via {{ provider }}{% endblocktrans %}</h1>
+            <p>{% blocktrans with provider.name as provider %}You are about to sign in using a third-party account from {{ provider }}.{% endblocktrans %}</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="social-btn">
+                <span>🔵 Continue with {{ provider.name }}</span>
+            </button>
+        </form>
+
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">🔴 Logout</button>
+        </form>
+        {% endif %}
+
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="back-to-login">⬅ Back to Login</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .login-container { text-align: center; }
+    .login-card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); width: 350px; }
+    .social-logo { width: 50px; margin-bottom: 15px; }
+    h1 { font-size: 22px; margin-bottom: 10px; color: #202124; }
+    p { font-size: 14px; color: #5f6368; margin-bottom: 20px; }
+    .social-btn, .logout-btn, .back-to-login { background: #4285F4; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; border-radius: 5px; cursor: pointer; display: flex; justify-content: center; align-items: center; margin-top: 10px; }
+    .logout-btn { background: #d9534f; }
+    .social-btn:hover { background: #357ae8; }
+    .logout-btn:hover { background: #c9302c; }
+    ul.messages { display: none !important; }
+</style>
+{% endblock content %}
