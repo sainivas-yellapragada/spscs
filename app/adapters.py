@@ -13,10 +13,12 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
         return True  
 
     def pre_social_login(self, request, sociallogin):
+        # Get Google ID ('sub') for checking existing users and as a unique suffix
         google_id = sociallogin.account.extra_data.get('sub', '')
 
         if google_id:
             try:
+                # Check if a user with this exact google_id as username exists (legacy check)
                 existing_user = User.objects.get(username=google_id)
                 sociallogin.connect(request, existing_user)
                 return
@@ -24,12 +26,34 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
                 pass
 
         user = sociallogin.user
-        if not user.pk:
+        if not user.pk:  # New user
             if not user.username:
-                user.username = google_id or sociallogin.account.extra_data.get('email', '').split('@')[0]
+                extra_data = sociallogin.account.extra_data
+                # Use the full, unmodified name as the base username
+                base_username = extra_data.get('name', '')
+                if not base_username:  # Fallback to email prefix if name is unavailable
+                    email = extra_data.get('email', '')
+                    base_username = email.split('@')[0] if email else f"user_{google_id[:8]}"
+                
+                # Start with the base username
+                preferred_username = base_username
+                
+                # Check if the username already exists and make it unique if needed
+                counter = 0
+                while User.objects.filter(username=preferred_username).exists():
+                    # Append part of google_id with an optional counter to ensure uniqueness
+                    preferred_username = f"{base_username}_{google_id[:8]}{'' if counter == 0 else f'_{counter}'}"
+                    counter += 1
+                
+                user.username = preferred_username
 
-        user.save()
+        try:
+            user.save()
+        except Exception as e:
+            logger.error(f"Error saving user {user.username}: {e}")
+            raise
 
+        # Create or update the profile
         profile, created = Profile.objects.get_or_create(user=user)
         
         # Get login_type from GET first, then session
