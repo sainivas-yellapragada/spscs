@@ -98,7 +98,7 @@ def login_view(request):
 @login_required
 def home(request):
     profile = Profile.objects.filter(user=request.user).first()
-    all_projects = Project.objects.all()
+    all_projects = Project.objects.all()  # Still useful if you need it elsewhere
     tasks = Task.objects.filter(assigned_to=request.user)
     today = date.today()
 
@@ -113,16 +113,17 @@ def home(request):
                 team_members_dict[user] = set()
             team_members_dict[user].add(task.project.title)
 
+    # Use user_projects instead of all_projects for project_stages
+    user_projects = Project.objects.filter(team_members=request.user)
     project_stages = {
-        "Planning": all_projects.filter(status="Planning").count(),
-        "Design": all_projects.filter(status="Design").count(),
-        "Building": all_projects.filter(status="In Progress").count(),
-        "Testing": all_projects.filter(status="Testing").count()
+        "Planning": user_projects.filter(status="Planning").count(),
+        "Design": user_projects.filter(status="Design").count(),
+        "Building": user_projects.filter(status="In Progress").count(),
+        "Testing": user_projects.filter(status="Testing").count()
     }
 
     login_type = request.session.get('login_type', 'employee')
 
-    user_projects = Project.objects.filter(team_members=request.user)
     project_status_logs = ProjectStatusLog.objects.filter(project__in=user_projects).order_by('-changed_at')
     project_notifications = [
         {'message': f"Project '{log.project.title}' status changed from {log.old_status} to {log.new_status}", 'date': log.changed_at}
