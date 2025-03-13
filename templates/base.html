@@ -1,4 +1,4 @@
-{% load i18n %}
+<!---->{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,24 +20,24 @@
             </div>
         {% endif %}
 
-        {% block menu %}
-            <!-- Default menu -->
-            <div>
-                <strong>{% trans "Menu:" %}</strong>
-                <ul>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
-                        <li><a href="{% url 'account_email' %}">{% trans "Change Email" %}</a></li>
-                        <li><a href="{% url 'account_change_password' %}">{% trans "Change Password" %}</a></li>
-                        <li><a href="{% url 'socialaccount_connections' %}">{% trans "Account Connections" %}</a></li>
-                        <li><a href="{% url 'logout' %}">{% trans "Sign Out" %}</a></li>
-                    {% else %}
-                        <li><a href="{% url 'account_login' %}">{% trans "Sign In" %}</a></li>
-                        <li><a href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        {% endblock menu %}
+       <!-- {% block menu %}-->
+       <!--      Default menu -->
+       <!--     <div>-->
+        <!--        <strong>{% trans "Menu:" %}</strong>-->
+        <!--        <ul>-->
+         <!--           {% if user.is_authenticated %}-->
+         <!--               <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>-->
+          <!--              <li><a href="{% url 'account_email' %}">{% trans "Change Email" %}</a></li>-->
+          <!--              <li><a href="{% url 'account_change_password' %}">{% trans "Change Password" %}</a></li>-->
+          <!--              <li><a href="{% url 'socialaccount_connections' %}">{% trans "Account Connections" %}</a></li>-->
+          <!--              <li><a href="{% url 'logout' %}">{% trans "Sign Out" %}</a></li>-->
+        <!--            {% else %}-->
+            <!--             <li><a href="{% url 'account_login' %}">{% trans "Sign In" %}</a></li>-->
+       <!--                 <li><a href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a></li>-->
+       <!--             {% endif %}-->
+      <!--          </ul>-->
+      <!--      </div>-->
+      <!--  {% endblock menu %}-->
 
         {% block content %}{% endblock content %}
     {% endblock body %}
