@@ -1,71 +1,95 @@
+# 🚀 SPSCS – *Software Progress Status Checking System*
 
-# Project Title
+**Track Progress. Empower Teams. Deliver Excellence.**
 
-A brief description of what this project does and who it's for
+---
 
-Project Management System (PMS) - Overview
-1. Project Name:
-Project Management System (PMS)
+## 🌟 Overview
 
-2. Description:
-PMS is a full-stack project management web application built using Django and MongoDB. It allows users to manage projects, track tasks, collaborate with team members, and monitor progress efficiently. The system supports multiple authentication methods, including Google OAuth, LinkedIn login, and traditional email/password registration.
+**SPSCS** is a full-stack project management and progress tracking system built to simplify how teams handle software projects. From **task assignments** to **collaborative updates**, it brings structure and visibility to your workflow. Perfect for developers, project leads, and academic teams!
 
-3. Features:
-User Authentication & Authorization:
-Google OAuth login
-LinkedIn login
-Traditional email/password authentication using Django Allauth
-User Roles & Permissions:
-Admin, Manager, Team Member roles
-Project Management:
-Create, update, and delete projects
-Assign users to projects
-Define project deadlines and milestones
-Task Management:
-Create, assign, and track tasks
-Set task priority levels
-Status updates (To Do, In Progress, Completed)
-Collaboration & Communication:
-Commenting on tasks
-Notifications and alerts
-Dashboard & Reporting:
-Overview of ongoing projects
-Task completion statistics
-User activity tracking
-Database Migration:
-Migrated from MySQL to MongoDB Compass
-4. Tech Stack:
-Backend: Django, Django REST Framework
-Frontend: HTML, CSS, JavaScript (Optional: React or Vue for enhanced UI)
-Database: MongoDB (using Django with MongoEngine)
-Authentication: Django Allauth (Google & LinkedIn OAuth, traditional login)
-5. Installation & Setup:
-git clone (https://github.com/sainivas-yellapragada/pms.git)
+---
+
+## 🔑 Core Features
+
+### 🔐 Authentication & Access Control
+- Google OAuth login  
+- Github login  
+- Traditional email/password via Django Allauth  
+- Role-based access: Admin,Team Member or employee  
+
+### 🤩 Project Management
+- Create, edit, and delete projects  
+- Assign team members with defined roles  
+- Set milestones and project deadlines  
+
+### ✅ Task Management
+- Create and assign tasks  
+- Priority levels and status updates (To Do, In Progress, Completed)  
+- Track task history and updates  
+
+### 💬 Collaboration
+- Excalidraw for Whiteboard required tasks such as brainstorming
+- In-app notifications for updates and deadlines  
+
+### 📈 Dashboard & Reports
+- Visual summary of ongoing projects  
+- Task completion and productivity stats  
+- User activity insights  
+
+### ↺ Tech Migration
+- Smooth migration from **MySQL** to **PostgreSQL** and vice versa 
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend**: Django, Django REST Framework  
+- **Frontend**: HTML, CSS, JavaScript 
+- **Database**: MySQl (Development) and PostgreSQL (Production)  
+- **Authentication**: Django Allauth (OAuth + traditional)
+
+---
+
+## ⚙️ Installation & Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/sainivas-yellapragada/pms.git
 cd pms
 
 # Create a virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
+source venv/bin/activate   # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure .env file (set database credentials and OAuth keys)
+# Configure environment (.env) file with DB and OAuth credentials
 
-# Run migrations
+# Run database migrations
 python manage.py migrate
 
 # Start the development server
 python manage.py runserver
+```
 
-6. Usage:
-Sign up or log in using Google, LinkedIn, or email/password.
-Create a new project and invite team members.
-Add and assign tasks within a project.
-Update task progress and collaborate using comments.
-View project statistics in the dashboard.
-7. Future Enhancements:
-Kanban board for visual task tracking
-File attachments in tasks
-Email notifications
-Mobile-friendly UI
+---
+
+## 🚀 Getting Started
+
+1. Sign up using Google, LinkedIn, or email/password.  
+2. Create a new project and invite team members.  
+3. Add tasks, assign them, and track progress.  
+4. Collaborate via comments and view real-time updates.  
+5. Monitor progress with visual dashboards.
+6. Schedule, manage metings
+
+---
+
+## 🔮 Coming Soon
+
+- 📌 File attachments within tasks  
+- 📧 Email notifications  
+- 📱 Fully responsive mobile UI
+
